@@ -60,6 +60,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `voice/MicTest.tsx` | Mic test with live level meter |
 | `theme/ferretTheme.ts`, `theme/ferret-style.css` | The Ferret style: navy/copper palette and tighter corners from the Ferret design system, applied only while the "Ferret style" switch is on |
 | `Branding.tsx`, `assets/ferret-logo.png` | Ferret logo + name for the titlebar, home page and login screen |
+| `sounds.ts` + `sounds/*.ogg` | Ferret's own synthesised sound pack (message chime, mute/deafen, voice join/leave, stream, ringtones). The open-source fallback sounds are silent placeholders, plus a click for messages |
 
 **Edited upstream files**
 
@@ -70,6 +71,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `components/ui/.../voice/callCard/VoiceCallCardStatus.tsx` | Shows the connection quality badge |
 | `components/app/interface/settings/UserSettings.tsx` | "Ferret" settings page, Ferret version + unofficial notice, "Source Code" links to Ferret (AGPL) |
 | `components/app/interface/settings/user/Native.tsx` | Ferret name |
+| `components/client/Sounds.tsx` | Plays Ferret's sound pack instead of the silent fallback sounds |
 | `components/ui/themes/LoadTheme.tsx` | Applies the Ferret style on top of the stock theme; removes stale variables when switching back |
 | `components/app/interface/desktop/Titlebar.tsx`, `src/interface/Home.tsx`, `components/auth/src/AuthPage.tsx` | Ferret logo instead of the placeholder wordmark |
 | `components/ui/components/design/CategoryButton.tsx` | **Bug fix:** opening a long dropdown (e.g. microphone picker) scrolled the whole settings page and pushed the dropdown off screen; now only the list scrolls |
