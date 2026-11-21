@@ -29,11 +29,12 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 
 | File | Change |
 | --- | --- |
-| `src/main.ts` | Register/serve the bundled web client; Ferret updater instead of `update-electron-app`; own AppUserModelID; navigation guard compares protocol + host (`origin` is `"null"` for custom schemes); dev runs don't claim `ferret://` links |
-| `src/native/window.ts` | Load `ferret-app://app/` instead of `https://stoat.chat/app` (`--force-server` still works); `backgroundThrottling: false` so timers keep running in the tray |
+| `src/main.ts` | Register/serve the bundled web client; Ferret updater instead of `update-electron-app`; own AppUserModelID; navigation guard compares protocol + host (`origin` is `"null"` for custom schemes); dev runs don't claim `ferret://` links; **quit fix:** re-quit on a fresh task (on Windows the second `app.quit()` was ignored, leaving the app running without a window, which also broke "Restart now" for updates) |
+| `src/native/window.ts` | Load `ferret-app://app/` instead of `https://stoat.chat/app` (`--force-server` still works); `backgroundThrottling: false` so timers keep running in the tray; `quitApp` copes with an already-closed window |
 | `src/native/config.ts` | Discord RPC defaults to off |
 | `src/native/deepLink.ts` | `ferret://` links instead of `stoat://` |
-| `src/native/autoLaunch.ts`, `src/native/tray.ts` | Ferret name |
+| `src/native/autoLaunch.ts` | Ferret name |
+| `src/native/tray.ts` | Ferret name; never touches a destroyed window (was "Object has been destroyed" on Quit) |
 | `src/preload.ts` | Loads the Ferret bridge |
 | `forge.config.ts` | Ferret name/executable/installer, icon URL, bundles `build/web`, fails early if it's missing, publisher repo |
 | `package.json` | Name, product name (→ separate `%AppData%\Ferret` data folder), version, repo, web build scripts; removed `update-electron-app` |

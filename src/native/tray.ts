@@ -4,7 +4,7 @@ import trayIconAsset from "../../assets/desktop/icon.png?asset";
 import macOsTrayIconAsset from "../../assets/desktop/iconTemplate.png?asset";
 import { version } from "../../package.json";
 
-import { mainWindow, quitApp } from "./window";
+import { createMainWindow, mainWindow, quitApp } from "./window";
 
 // internal tray state
 let tray: Tray = null;
@@ -27,14 +27,23 @@ export function initTray() {
   updateTrayMenu();
   tray.setToolTip("Ferret"); // Ferret mod
   tray.setImage(trayIcon);
-  tray.on("click", () => {
-    if (mainWindow.isVisible()) {
-      mainWindow.hide();
-    } else {
-      mainWindow.show();
-      mainWindow.focus();
-    }
-  });
+  tray.on("click", toggleWindow); // Ferret mod
+}
+
+// Ferret mod: never touch a destroyed window from the tray; reopen instead
+const liveWindow = () =>
+  mainWindow && !mainWindow.isDestroyed() ? mainWindow : undefined;
+
+function toggleWindow() {
+  const window = liveWindow();
+  if (!window) {
+    createMainWindow();
+  } else if (window.isVisible()) {
+    window.hide();
+  } else {
+    window.show();
+    window.focus();
+  }
 }
 
 export function updateTrayMenu() {
@@ -54,15 +63,9 @@ export function updateTrayMenu() {
       },
       { type: "separator" },
       {
-        label: mainWindow.isVisible() ? "Hide App" : "Show App",
+        label: liveWindow()?.isVisible() ? "Hide App" : "Show App", // Ferret mod
         type: "normal",
-        click() {
-          if (mainWindow.isVisible()) {
-            mainWindow.hide();
-          } else {
-            mainWindow.show();
-          }
-        },
+        click: toggleWindow,
       },
       {
         label: "Quit App",

@@ -290,7 +290,10 @@ ipcMain.on("close", () => mainWindow?.close());
  */
 export function quitApp() {
   shouldQuit = true;
-  mainWindow.close();
+  // Ferret mod: the window can already be gone; closing it then threw
+  // "Object has been destroyed" from the tray menu
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.close();
+  else app.quit();
 }
 
 // Ensure global app quit works properly

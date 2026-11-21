@@ -172,7 +172,13 @@ if (acquiredLock) {
     e.preventDefault();
     destroyVirtualMic().finally(() => {
       readyToQuit = true;
-      app.quit();
+      // Ferret mod: re-quit on a fresh task. On Windows the teardown resolves
+      // instantly, so app.quit() ran while Electron still considered the
+      // first quit in progress and was ignored: windows closed, app stayed
+      // alive (and Squirrel's "Restart now" waited forever). Force-exit as a
+      // last resort if something still holds it open.
+      setTimeout(() => app.quit(), 0);
+      setTimeout(() => app.exit(0), 5000);
     });
   });
 } else {
