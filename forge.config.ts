@@ -12,11 +12,13 @@ import path from "node:path";
 
 // import { globSync } from "node:fs";
 
+// Ferret mod: own name, executable and installer so it sits beside Stoat
 const STRINGS = {
-  author: "Revolt Platforms LTD",
-  name: "Stoat",
-  execName: "stoat-desktop",
-  description: "Open source user-first chat platform.",
+  author: "Sp00kii",
+  name: "Ferret",
+  execName: "ferret",
+  description:
+    "Unofficial mod of Stoat, not affiliated with or endorsed by Stoat / Revolt Platforms Ltd.",
 };
 
 const ASSET_DIR = "assets/desktop";
@@ -28,19 +30,21 @@ const makers: ForgeConfig["makers"] = [
   new MakerSquirrel({
     name: STRINGS.name,
     authors: STRINGS.author,
-    // todo: hoist this
-    iconUrl: `https://stoat.chat/app/assets/icon-DUSNE-Pb.ico`,
+    // Ferret mod: Add/Remove Programs icon
+    iconUrl: `https://raw.githubusercontent.com/Sp00kii/ferret/main/assets/desktop/icon.ico`,
     // todo: loadingGif
     setupIcon: `${ASSET_DIR}/icon.ico`,
     description: STRINGS.description,
     exe: `${STRINGS.execName}.exe`,
     setupExe: `${STRINGS.execName}-setup.exe`,
-    copyright: "Copyright (C) 2025 Revolt Platforms LTD",
+    // Ferret mod
+    copyright:
+      "Copyright (C) 2025 Revolt Platforms LTD; modifications (C) 2026 Sp00kii",
   }),
   new MakerZIP({}),
   new MakerFlatpak({
     options: {
-      id: "chat.stoat.StoatDesktop",
+      id: "io.github.sp00kii.Ferret", // Ferret mod
       description: STRINGS.description,
       productName: STRINGS.name,
       productDescription: STRINGS.description,
@@ -54,8 +58,8 @@ const makers: ForgeConfig["makers"] = [
         "512x512": `${ASSET_DIR}/hicolor/512x512.png`,
       } as unknown,
       categories: ["Network"],
-      // open stoat:// links
-      mimeType: ["x-scheme-handler/stoat"],
+      // open ferret:// links
+      mimeType: ["x-scheme-handler/ferret"], // Ferret mod
       modules: [
         // use the latest zypak -- Electron sandboxing for Flatpak
         {
@@ -102,20 +106,27 @@ const config: ForgeConfig = {
     asar: true,
     name: STRINGS.name,
     executableName: STRINGS.execName,
-    // open stoat:// links (on mac)
-    protocols: [{ name: STRINGS.name, schemes: ["stoat"] }],
+    // open ferret:// links (on mac)
+    protocols: [{ name: STRINGS.name, schemes: ["ferret"] }], // Ferret mod
     icon:
       process.platform === "darwin"
         ? `${ASSET_DIR}/icon.icon`
         : `${ASSET_DIR}/icon`,
-    // extraResource: [
-    //   // include all the asset files
-    //   ...globSync(ASSET_DIR + "/**/*"),
-    // ],
+    // Ferret mod: ship the bundled web client as resources/web
+    extraResource: ["build/web"],
   },
   rebuildConfig: {},
   makers,
   hooks: {
+    // Ferret mod: fail early with a clear message instead of packaging an
+    // app that only shows "web client isn't built"
+    prePackage: async () => {
+      if (!fs.existsSync("build/web/index.html")) {
+        throw new Error(
+          "build/web is missing. Run `pnpm web:build` before packaging.",
+        );
+      }
+    },
     // Copy the node-pipewire dist to the app on linux
     packageAfterCopy: async (_config, buildPath, _version, platform) => {
       if (platform === "linux") {
@@ -176,8 +187,8 @@ const config: ForgeConfig = {
   publishers: [
     new PublisherGithub({
       repository: {
-        owner: "stoatchat",
-        name: "for-desktop",
+        owner: "Sp00kii", // Ferret mod
+        name: "ferret",
       },
     }),
   ],

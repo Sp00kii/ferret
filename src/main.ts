@@ -1,10 +1,16 @@
 import fs from "node:fs";
 import path from "node:path";
-import { IUpdateInfo, updateElectronApp } from "update-electron-app";
 
-import { BrowserWindow, Notification, app, shell } from "electron";
+import { BrowserWindow, app, shell } from "electron";
 import started from "electron-squirrel-startup";
 
+// Ferret mod: replaces update-electron-app (see src/ferret/updater.ts)
+import {
+  ferretAppUserModelId,
+  initFerret,
+  isAppUrl,
+  registerWebScheme,
+} from "./ferret";
 import { initAutoLaunch } from "./native/autoLaunch";
 import { config } from "./native/config";
 import {
@@ -16,7 +22,7 @@ import {
 import { initDiscordRpc } from "./native/discordRpc";
 import { initTray } from "./native/tray";
 import { destroyVirtualMic, initVirtualMic } from "./native/virtualMic";
-import { BUILD_URL, createMainWindow, mainWindow } from "./native/window";
+import { createMainWindow, mainWindow } from "./native/window";
 
 // In Flatpak, we have to update the temp dir to a shared directory across host and sandbox;
 // otherwise, the icon will not show up in the tray when using app indicators.
@@ -45,24 +51,15 @@ if (!config.hardwareAcceleration) {
   app.disableHardwareAcceleration();
 }
 
+// Ferret mod: the bundled web client is served from ferret-app://, which
+// has to be registered before the app is ready
+registerWebScheme();
+
 // ensure only one copy of the application can run
 const acquiredLock = app.requestSingleInstanceLock();
 
-const onNotifyUser = (_info: IUpdateInfo) => {
-  const notification = new Notification({
-    title: "Update Available",
-    body: "Restart the app to install the update.",
-    silent: true,
-  });
-
-  notification.show();
-};
-
 if (acquiredLock) {
-  // start auto update logic
-  updateElectronApp({ onNotifyUser });
-
-  // facilitate stoat:// links
+  // facilitate ferret:// links
   registerProtocol();
 
   // necessary macOS glue
@@ -81,6 +78,7 @@ if (acquiredLock) {
   app.on("ready", () => {
     // create window and application contexts
     initDeepLinks();
+    initFerret(); // Ferret mod: serves the web client, so before the window
     createMainWindow();
 
     // save first launch state
@@ -104,7 +102,7 @@ if (acquiredLock) {
 
     // Windows specific fix for notifications
     if (process.platform === "win32") {
-      app.setAppUserModelId("chat.stoat.notifications");
+      app.setAppUserModelId(ferretAppUserModelId()); // Ferret mod
     }
   });
 
@@ -144,7 +142,8 @@ if (acquiredLock) {
   app.on("web-contents-created", (_, contents) => {
     // prevent navigation out of build URL origin
     contents.on("will-navigate", (event, navigationUrl) => {
-      if (new URL(navigationUrl).origin !== BUILD_URL.origin) {
+      // Ferret mod: origin is "null" for ferret-app://, so compare protocol + host
+      if (!isAppUrl(navigationUrl)) {
         event.preventDefault();
       }
     });

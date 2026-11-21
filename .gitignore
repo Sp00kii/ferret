@@ -90,3 +90,6 @@ typings/
 
 # Electron-Forge
 out/
+
+# Ferret mod: bundled web client output (pnpm web:build)
+build/

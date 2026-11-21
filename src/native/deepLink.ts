@@ -5,9 +5,10 @@ import { app, ipcMain } from "electron";
 import { createMainWindow, mainWindow } from "./window";
 
 /**
- * Link scheme (stoat://)
+ * Link scheme (ferret://)
  */
-export const PROTOCOL = "stoat";
+// Ferret mod: own scheme, so stoat:// links keep opening the official app
+export const PROTOCOL = "ferret";
 
 /**
  * In-app path for a `stoat://` link.

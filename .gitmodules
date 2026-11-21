@@ -1,4 +1,3 @@
-[submodule "assets"]
-	path = assets
-	url = https://github.com/stoatchat/assets
-	update = none
+[submodule "web"]
+	path = web
+	url = https://github.com/Sp00kii/ferret-web.git

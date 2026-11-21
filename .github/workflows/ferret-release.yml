@@ -1,0 +1,56 @@
+# Ferret: build the Windows installer for a version tag (e.g. v1.0.0) and
+# publish it as a GitHub Release. The in-app updater (update.electronjs.org)
+# reads the RELEASES + .nupkg files attached here.
+name: Ferret Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    name: Windows installer
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout (with web + SDK submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Use the tag as the app version
+        shell: bash
+        run: npm pkg set version="${GITHUB_REF_NAME#v}"
+
+      - name: Install desktop dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build the Ferret web client
+        run: pnpm web:build
+
+      - name: Build installer
+        run: pnpm exec electron-forge make --platform win32 --arch x64 --targets @electron-forge/maker-squirrel
+
+      - name: Publish GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ls -la out/make/squirrel.windows/x64
+          gh release create "$GITHUB_REF_NAME" \
+            out/make/squirrel.windows/x64/* \
+            --title "Ferret $GITHUB_REF_NAME" \
+            --generate-notes

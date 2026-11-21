@@ -12,6 +12,7 @@ import {
 } from "electron";
 
 import windowIconAsset from "../../assets/desktop/icon.png?asset";
+import { WEB_URL } from "../ferret/constants";
 
 import { config } from "./config";
 import { updateTrayMenu } from "./tray";
@@ -21,10 +22,11 @@ import { startVirtualMic } from "./virtualMic";
 export let mainWindow: BrowserWindow;
 
 // currently in-use build
+// Ferret mod: load the bundled Ferret web client instead of stoat.chat/app
 export const BUILD_URL = new URL(
   app.commandLine.hasSwitch("force-server")
     ? app.commandLine.getSwitchValue("force-server")
-    : /*MAIN_WINDOW_VITE_DEV_SERVER_URL ??*/ "https://stoat.chat/app",
+    : WEB_URL,
 );
 
 // internal window state
@@ -62,6 +64,9 @@ export function createMainWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       spellcheck: true,
+      // Ferret mod: keep heartbeats, ringtone timers and presence updates on
+      // schedule while the window is minimised or hidden in the tray
+      backgroundThrottling: false,
     },
   });
 

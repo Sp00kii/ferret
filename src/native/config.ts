@@ -59,7 +59,7 @@ const store = new Store({
     startMinimisedToTray: false,
     spellchecker: true,
     hardwareAcceleration: true,
-    discordRpc: true,
+    discordRpc: false, // Ferret mod: off by default, toggle kept in settings
     windowState: {
       x: 0,
       y: 0,

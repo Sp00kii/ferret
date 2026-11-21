@@ -1,87 +1,86 @@
 <div align="center">
-<h1>
-  Stoat for Desktop
-  
-  [![Stars](https://img.shields.io/github/stars/stoatchat/for-desktop?style=flat-square&logoColor=white)](https://github.com/stoatchat/for-desktop/stargazers)
-  [![Forks](https://img.shields.io/github/forks/stoatchat/for-desktop?style=flat-square&logoColor=white)](https://github.com/stoatchat/for-desktop/network/members)
-  [![Pull Requests](https://img.shields.io/github/issues-pr/stoatchat/for-desktop?style=flat-square&logoColor=white)](https://github.com/stoatchat/for-desktop/pulls)
-  [![Issues](https://img.shields.io/github/issues/stoatchat/for-desktop?style=flat-square&logoColor=white)](https://github.com/stoatchat/for-desktop/issues)
-  [![Contributors](https://img.shields.io/github/contributors/stoatchat/for-desktop?style=flat-square&logoColor=white)](https://github.com/stoatchat/for-desktop/graphs/contributors)
-  [![License](https://img.shields.io/github/license/stoatchat/for-desktop?style=flat-square&logoColor=white)](https://github.com/stoatchat/for-desktop/blob/main/LICENSE)
-</h1>
-Application for Windows, macOS, and Linux.
+
+<img src="assets/desktop/icon.png" width="96" alt="Ferret icon" />
+
+# Ferret
+
+**A modded Stoat desktop app for Windows.**
+Same accounts, same servers, same people: it talks to the official Stoat servers exactly like the normal app.
+
+> **Unofficial mod of Stoat, not affiliated with or endorsed by Stoat / Revolt Platforms Ltd.**
+
+[**⬇ Download the latest release**](https://github.com/Sp00kii/ferret/releases/latest)
+
 </div>
-<br/>
 
-## Installation
+## What Ferret adds
 
-<a href="https://repology.org/project/stoat-desktop/versions">
-    <img src="https://repology.org/badge/vertical-allrepos/stoat-desktop.svg" alt="Packaging status" align="right">
-</a>
+- **Live presence that stays live.** Online / idle / offline status updates in real time, and everything resyncs right after your PC wakes from sleep, gets unlocked, or your network drops and comes back. (Fixes the cases where the official client got stuck "offline" until you pressed F5.)
+- **Incoming call ringtone.** A looping ringtone plus a Windows notification when someone starts a call in a DM or group, or in a server voice channel you chose to watch. Stops when you join, decline, or the call ends, and gives up after 30 seconds. Clicking the notification opens that call.
+- **More reliable voice.**
+  - Remembers your mic and speakers, and follows your headset when you unplug and replug it.
+  - Automatically rejoins a call after a connection drop, with a visible "Reconnecting" state.
+  - A small ping / packet-loss indicator while you're in a call.
+  - Noise suppression and echo cancellation toggles, plus a mic test with a live level meter.
+- **Discord Rich Presence is off by default** (the toggle is still in Settings → Desktop).
+- **One "Ferret" page in Settings** for all of the above, plus an update checker.
 
-- All downloads and instructions for Stoat can be found on our [Website](https://stoat.chat/download).
+Ferret installs **next to** the official Stoat app: separate install folder, data folder and app ID, so you can keep both. You'll log in once in Ferret, as it keeps its own session.
 
-## Development Guide
+## Installing
 
-_Contribution guidelines for Desktop app TBA!_
+1. Download `ferret-setup.exe` from the [latest release](https://github.com/Sp00kii/ferret/releases/latest) and run it.
+2. **Windows SmartScreen will warn you** because the installer isn't code-signed (signing certificates cost money). Click **More info → Run anyway**.
+3. Ferret installs to `%LocalAppData%\Ferret` and starts automatically. It checks GitHub for new versions on startup and asks before updating.
 
-<!-- Before contributing, make yourself familiar with [our contribution guidelines](https://developers.revolt.chat/contrib.html), the [code style guidelines](./GUIDELINES.md), and the [technical documentation for this project](https://revoltchat.github.io/frontend/). -->
+## Building from source
 
-Before getting started, you'll want to install:
-
-- [Git](https://git-scm.com/install/)
-- [mise-en-place](https://mise.jdx.dev/getting-started.html)
-
-Then proceed to setup:
-
-```bash
-# clone the repository
-git clone --recursive https://github.com/stoatchat/for-desktop stoat-for-desktop
-cd stoat-for-desktop
-
-# Install tools from mise
-mise install
-
-# install all packages
-mise install:frozen
-
-# start the application
-mise dev
-# ... or build the bundle
-mise build
-# ... or build all distributables
-mise make
-```
-
-Various useful commands for development testing:
+You need [Git](https://git-scm.com/), [Node.js 24+](https://nodejs.org/) and pnpm 11 (`npm install -g pnpm@11`).
 
 ```bash
-# connect to the development server
-mise exec -- pnpm start -- --force-server http://localhost:5173
+# clone with the web client + SDK submodules
+git clone --recursive https://github.com/Sp00kii/ferret
+cd ferret
 
-# test the flatpak (after `make`)
-mise exec -- pnpm install:flatpak
-mise exec -- pnpm run:flatpak
-# ... also connect to dev server like so:
-mise exec -- pnpm run:flatpak --force-server http://localhost:5173
+# install the desktop app's dependencies
+pnpm install
 
-# Nix-specific instructions for testing
-nix develop
-pnpm package
-pnpm run:nix
-# ... as before:
-pnpm run:nix --force-server=http://localhost:5173
-# a better solution would be telling
-# Electron Forge where system Electron is
+# build the modded web client into build/web (first time ~5 min)
+pnpm web:build
+
+# run Ferret in development mode
+pnpm start
+
+# build a Windows installer into out/make/squirrel.windows/x64
+pnpm make
 ```
 
-### Pulling in Stoat's assets
+After changing web client code, `pnpm web:build:fast` rebuilds without reinstalling packages.
 
-If you want to pull in Stoat brand assets after pulling, run the following:
+### How the repos fit together
+
+| Repo | What it is |
+| --- | --- |
+| [`Sp00kii/ferret`](https://github.com/Sp00kii/ferret) | This repo: the Electron desktop app (fork of [stoatchat/for-desktop](https://github.com/stoatchat/for-desktop)) |
+| [`Sp00kii/ferret-web`](https://github.com/Sp00kii/ferret-web) | The web client, as the `web/` submodule (fork of [stoatchat/for-web](https://github.com/stoatchat/for-web)) |
+| [`Sp00kii/ferret-sdk`](https://github.com/Sp00kii/ferret-sdk) | The JS SDK, as `web/packages/stoat.js` (fork of [stoatchat/javascript-client-sdk](https://github.com/stoatchat/javascript-client-sdk)) |
+
+The official desktop app loads `https://stoat.chat/app`. Ferret instead bundles its own build of the web client and serves it from `ferret-app://app`, while still talking to `api.stoat.chat`.
+
+- [CHANGES.md](CHANGES.md) lists everything Ferret modifies.
+- [UPSTREAM.md](UPSTREAM.md) explains how to pull in new Stoat updates.
+
+### Publishing a new version
 
 ```bash
-# update the assets
-mise assets
+git tag v1.0.1
+git push origin v1.0.1
 ```
 
-Currently, this is required to build, any forks are expected to provide their own assets.
+GitHub Actions builds the installer and attaches it to a new release; installed copies pick it up on their next start.
+
+## License
+
+Ferret is licensed under the [GNU AGPL-3.0](LICENSE), like the Stoat projects it is based on. Original work © Revolt Platforms Ltd and the Stoat contributors; Ferret's modifications © Sp00kii.
+
+*Unofficial mod of Stoat, not affiliated with or endorsed by Stoat / Revolt Platforms Ltd.* Ferret uses no Stoat logos or brand assets; the icon is a placeholder.
