@@ -12,7 +12,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | --- | --- |
 | `src/ferret/constants.ts` | Names, IDs, schemes and the unofficial notice |
 | `src/ferret/webApp.ts` | Serves the bundled web client from `ferret-app://app` (SPA routing, custom ringtone file) |
-| `src/ferret/settings.ts` | Ferret settings store (`ferret-settings.json`), custom ringtone picker |
+| `src/ferret/settings.ts` | Ferret settings store (`ferret-settings.json`): ringtone choice (Franklin by default), custom ringtone file |
 | `src/ferret/incomingCall.ts` | Windows notification + taskbar flash for incoming calls; click opens the call |
 | `src/ferret/resync.ts` | Tells the page to resync on wake from sleep / screen unlock |
 | `src/ferret/updater.ts` | Checks GitHub Releases on startup, offers the update, installs via update.electronjs.org |
@@ -50,6 +50,7 @@ settings, so pulling upstream changes doesn't conflict.
 | --- | --- |
 | `bridge.ts` | Types for `window.ferret` |
 | `settings.ts` | Shared reactive copy of the Ferret settings |
+| `ringtones.ts` + `public/ferret/ringtones/` | Built-in ringtone choices (Franklin is the default) |
 | `IncomingCalls.tsx` | Detects calls starting, loops the ringtone, shows the call card and the Windows notification |
 | `FerretSettings.tsx` | The "Ferret" settings page |
 | `voice/devices.ts` | Follows the preferred mic/output across unplug and replug |

@@ -11,6 +11,8 @@ import { isFromApp } from "./trust";
 export type FerretSettings = {
   ringtone: {
     enabled: boolean;
+    /** Built-in sound id (see the web client's ringtones.ts), or "custom" */
+    preset: string;
     /** 0-100 */
     volume: number;
     /** Absolute path of the copied custom sound, set only by the main process */
@@ -23,9 +25,12 @@ export type FerretSettings = {
   showConnectionQuality: boolean;
 };
 
+const DEFAULT_PRESET = "franklin";
+
 const DEFAULTS: FerretSettings = {
   ringtone: {
     enabled: true,
+    preset: DEFAULT_PRESET,
     volume: 70,
     customFile: null,
     customFileName: null,
@@ -46,11 +51,11 @@ const store = new Store({
 
 export function getSettings(): FerretSettings {
   const saved = store.store;
-  return {
-    ...DEFAULTS,
-    ...saved,
-    ringtone: { ...DEFAULTS.ringtone, ...saved.ringtone },
-  };
+  const ringtone = { ...DEFAULTS.ringtone, ...saved.ringtone };
+  // settings from before presets existed: keep someone's own sound selected
+  if (!saved.ringtone?.preset && ringtone.customFile)
+    ringtone.preset = "custom";
+  return { ...DEFAULTS, ...saved, ringtone };
 }
 
 function save(next: FerretSettings) {
@@ -78,6 +83,12 @@ function applyPatch(patch: unknown): FerretSettings {
       next.ringtone.ringWhenHidden = r.ringWhenHidden;
     if (typeof r.volume === "number" && Number.isFinite(r.volume))
       next.ringtone.volume = Math.min(100, Math.max(0, Math.round(r.volume)));
+    if (
+      typeof r.preset === "string" &&
+      /^[a-z0-9-]{1,40}$/.test(r.preset) &&
+      (r.preset !== "custom" || next.ringtone.customFile)
+    )
+      next.ringtone.preset = r.preset;
   }
 
   if (Array.isArray(input.watchedVoiceChannels)) {
@@ -131,6 +142,7 @@ async function pickRingtone(): Promise<FerretSettings> {
     ...current,
     ringtone: {
       ...current.ringtone,
+      preset: "custom",
       customFile: target,
       customFileName: path.basename(source),
     },
@@ -144,7 +156,15 @@ function clearRingtone(): FerretSettings {
   }
   return save({
     ...current,
-    ringtone: { ...current.ringtone, customFile: null, customFileName: null },
+    ringtone: {
+      ...current.ringtone,
+      preset:
+        current.ringtone.preset === "custom"
+          ? DEFAULT_PRESET
+          : current.ringtone.preset,
+      customFile: null,
+      customFileName: null,
+    },
   });
 }
 
