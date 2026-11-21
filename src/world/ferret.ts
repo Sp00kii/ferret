@@ -27,6 +27,10 @@ contextBridge.exposeInMainWorld("ferret", {
   pickRingtone: () => ipcRenderer.invoke("ferret:pickRingtone"),
   clearRingtone: () => ipcRenderer.invoke("ferret:clearRingtone"),
 
+  pickSound: (slot: string) => ipcRenderer.invoke("ferret:pickSound", slot),
+  clearSound: (slot: string) => ipcRenderer.invoke("ferret:clearSound", slot),
+  resetSounds: () => ipcRenderer.invoke("ferret:resetSounds"),
+
   showIncomingCall: (call: unknown) =>
     ipcRenderer.send("ferret:showIncomingCall", call),
   dismissIncomingCall: () => ipcRenderer.send("ferret:dismissIncomingCall"),

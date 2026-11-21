@@ -25,7 +25,39 @@ export type FerretSettings = {
   showConnectionQuality: boolean;
   /** Ferret's look (navy/copper); off = stock Stoat theming */
   ferretStyle: boolean;
+  /** Per-sound choices; slots that aren't listed use Ferret's own sound */
+  sounds: Partial<Record<SoundSlot, SoundChoice>>;
 };
+
+/** Customisable sounds, named like the web client's sound controller */
+export const SOUND_SLOTS = [
+  "message",
+  "mute",
+  "unmute",
+  "deafen",
+  "undeafen",
+  "userJoinVoice",
+  "userLeaveVoice",
+  "userMoved",
+  "streamStart",
+  "streamEnd",
+  "streamViewerJoin",
+  "streamViewerLeave",
+  "ringtoneOutgoing",
+] as const;
+
+export type SoundSlot = (typeof SOUND_SLOTS)[number];
+
+export type SoundChoice = {
+  /** "ferret", a library sound id (see the web client's soundLibrary.ts), or "custom" */
+  choice: string;
+  customFile: string | null;
+  customFileName: string | null;
+};
+
+const isSoundSlot = (value: unknown): value is SoundSlot =>
+  typeof value === "string" &&
+  (SOUND_SLOTS as readonly string[]).includes(value);
 
 const DEFAULT_PRESET = "franklin";
 
@@ -41,10 +73,11 @@ const DEFAULTS: FerretSettings = {
   watchedVoiceChannels: [],
   showConnectionQuality: true,
   ferretStyle: true,
+  sounds: {},
 };
 
-const MAX_RINGTONE_BYTES = 10 * 1024 * 1024;
-const RINGTONE_EXTENSIONS = ["mp3", "ogg", "wav", "m4a", "aac", "flac", "webm"];
+const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
+const AUDIO_EXTENSIONS = ["mp3", "ogg", "wav", "m4a", "aac", "flac", "webm"];
 
 // electron-store's typings don't resolve under this TS setup, same as native/config.ts
 const store = new Store({
@@ -111,6 +144,23 @@ function applyPatch(patch: unknown): FerretSettings {
   if (typeof input.ferretStyle === "boolean")
     next.ferretStyle = input.ferretStyle;
 
+  if (input.sounds && typeof input.sounds === "object") {
+    next.sounds = { ...current.sounds };
+    for (const [slot, value] of Object.entries(input.sounds)) {
+      if (!isSoundSlot(slot) || !value || typeof value !== "object") continue;
+      const choice = (value as Partial<SoundChoice>).choice;
+      if (typeof choice !== "string" || !/^[a-z0-9-]{1,40}$/.test(choice))
+        continue;
+      const existing = next.sounds[slot];
+      if (choice === "custom" && !existing?.customFile) continue;
+      next.sounds[slot] = {
+        choice,
+        customFile: existing?.customFile ?? null,
+        customFileName: existing?.customFileName ?? null,
+      };
+    }
+  }
+
   return save(next);
 }
 
@@ -119,29 +169,48 @@ export function customRingtonePath(): string | null {
   return file && existsSync(file) ? file : null;
 }
 
-async function pickRingtone(): Promise<FerretSettings> {
+export function customSoundPath(slot: string): string | null {
+  if (!isSoundSlot(slot)) return null;
+  const file = getSettings().sounds[slot]?.customFile;
+  return file && existsSync(file) ? file : null;
+}
+
+/**
+ * Let the user pick an audio file and keep our own copy (so it survives the
+ * original being moved) at <userData>/<folder>/<baseName>.<ext>.
+ */
+async function pickAudioFile(title: string, folder: string, baseName: string) {
   const result = await dialog.showOpenDialog(mainWindow, {
-    title: "Choose a ringtone",
+    title,
     properties: ["openFile"],
-    filters: [{ name: "Audio", extensions: RINGTONE_EXTENSIONS }],
+    filters: [{ name: "Audio", extensions: AUDIO_EXTENSIONS }],
   });
   const source = result.filePaths[0];
-  if (result.canceled || !source) return getSettings();
+  if (result.canceled || !source) return undefined;
 
   const ext = path.extname(source).slice(1).toLowerCase();
-  if (!RINGTONE_EXTENSIONS.includes(ext))
-    throw new Error("Unsupported file type");
-  if (statSync(source).size > MAX_RINGTONE_BYTES)
-    throw new Error("Ringtone must be smaller than 10 MB");
+  if (!AUDIO_EXTENSIONS.includes(ext)) throw new Error("Unsupported file type");
+  if (statSync(source).size > MAX_AUDIO_BYTES)
+    throw new Error("Sound files must be smaller than 10 MB");
 
-  // Keep our own copy so the ringtone survives the original being moved
-  const dir = path.join(app.getPath("userData"), "ringtones");
+  const dir = path.join(app.getPath("userData"), folder);
   mkdirSync(dir, { recursive: true });
-  const target = path.join(dir, `custom.${ext}`);
-  for (const other of RINGTONE_EXTENSIONS) {
-    rmSync(path.join(dir, `custom.${other}`), { force: true });
+  for (const other of AUDIO_EXTENSIONS) {
+    rmSync(path.join(dir, `${baseName}.${other}`), { force: true });
   }
+  const target = path.join(dir, `${baseName}.${ext}`);
   copyFileSync(source, target);
+  return { file: target, name: path.basename(source) };
+}
+
+async function pickRingtone(): Promise<FerretSettings> {
+  const picked = await pickAudioFile(
+    "Choose a ringtone",
+    "ringtones",
+    "custom",
+  );
+  if (!picked) return getSettings();
+  const target = picked.file;
 
   const current = getSettings();
   return save({
@@ -150,9 +219,47 @@ async function pickRingtone(): Promise<FerretSettings> {
       ...current.ringtone,
       preset: "custom",
       customFile: target,
-      customFileName: path.basename(source),
+      customFileName: picked.name,
     },
   });
+}
+
+async function pickSound(slot: unknown): Promise<FerretSettings> {
+  if (!isSoundSlot(slot)) return getSettings();
+  const picked = await pickAudioFile("Choose a sound", "sounds", slot);
+  if (!picked) return getSettings();
+
+  const current = getSettings();
+  return save({
+    ...current,
+    sounds: {
+      ...current.sounds,
+      [slot]: {
+        choice: "custom",
+        customFile: picked.file,
+        customFileName: picked.name,
+      },
+    },
+  });
+}
+
+function clearSound(slot: unknown): FerretSettings {
+  const current = getSettings();
+  if (!isSoundSlot(slot)) return current;
+  const existing = current.sounds[slot];
+  if (existing?.customFile) rmSync(existing.customFile, { force: true });
+  const sounds = { ...current.sounds };
+  delete sounds[slot];
+  return save({ ...current, sounds });
+}
+
+/** Back to Ferret's sound for every slot, removing any custom files */
+function resetSounds(): FerretSettings {
+  const current = getSettings();
+  for (const value of Object.values(current.sounds)) {
+    if (value?.customFile) rmSync(value.customFile, { force: true });
+  }
+  return save({ ...current, sounds: {} });
 }
 
 function clearRingtone(): FerretSettings {
@@ -186,5 +293,14 @@ export function initSettingsIpc() {
   );
   ipcMain.handle("ferret:clearRingtone", (event) =>
     isFromApp(event) ? clearRingtone() : null,
+  );
+  ipcMain.handle("ferret:pickSound", (event, slot: unknown) =>
+    isFromApp(event) ? pickSound(slot) : null,
+  );
+  ipcMain.handle("ferret:clearSound", (event, slot: unknown) =>
+    isFromApp(event) ? clearSound(slot) : null,
+  );
+  ipcMain.handle("ferret:resetSounds", (event) =>
+    isFromApp(event) ? resetSounds() : null,
   );
 }

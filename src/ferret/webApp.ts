@@ -5,7 +5,7 @@ import { pathToFileURL } from "node:url";
 import { app, net, protocol } from "electron";
 
 import { FERRET } from "./constants";
-import { customRingtonePath } from "./settings";
+import { customRingtonePath, customSoundPath } from "./settings";
 
 /**
  * Must run before the app is ready. `standard` + `secure` give the bundled
@@ -74,6 +74,15 @@ export function serveWebApp() {
       return file
         ? net.fetch(pathToFileURL(file).toString())
         : new Response("No custom ringtone", { status: 404 });
+    }
+
+    if (url.pathname.startsWith("/__ferret/sound/")) {
+      const file = customSoundPath(
+        url.pathname.slice("/__ferret/sound/".length),
+      );
+      return file
+        ? net.fetch(pathToFileURL(file).toString())
+        : new Response("No custom sound", { status: 404 });
     }
 
     const index = path.join(root, "index.html");

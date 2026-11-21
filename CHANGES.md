@@ -12,7 +12,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | --- | --- |
 | `src/ferret/constants.ts` | Names, IDs, schemes and the unofficial notice |
 | `src/ferret/webApp.ts` | Serves the bundled web client from `ferret-app://app` (SPA routing, custom ringtone file) |
-| `src/ferret/settings.ts` | Ferret settings store (`ferret-settings.json`): ringtone choice (Franklin by default), custom ringtone file, Ferret style switch |
+| `src/ferret/settings.ts` | Ferret settings store (`ferret-settings.json`): ringtone choice (Franklin by default), custom ringtone file, Ferret style switch, per-sound choices + custom sound files |
 | `src/ferret/devData.ts` | `pnpm start` uses its own `%AppData%\Ferret Dev` folder so a dev run never closes or changes the installed Ferret |
 | `src/ferret/incomingCall.ts` | Windows notification + taskbar flash for incoming calls; click opens the call |
 | `src/ferret/resync.ts` | Tells the page to resync on wake from sleep / screen unlock |
@@ -60,6 +60,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `voice/MicTest.tsx` | Mic test with live level meter |
 | `theme/ferretTheme.ts`, `theme/ferret-style.css` | The Ferret style: navy/copper palette and tighter corners from the Ferret design system, applied only while the "Ferret style" switch is on |
 | `Branding.tsx`, `assets/ferret-logo.png` | Ferret logo + name for the titlebar, home page and login screen |
+| `soundLibrary.ts` + `sounds/library/*.ogg` | Pickable sounds for any event (Clicker, Pop, Bell, Blip, Squeak, Boop, Dook) and which file to play per event |
 | `sounds.ts` + `sounds/*.ogg` | Ferret's own synthesised sound pack (message chime, mute/deafen, voice join/leave, stream, ringtones). The open-source fallback sounds are silent placeholders, plus a click for messages |
 
 **Edited upstream files**
@@ -71,7 +72,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `components/ui/.../voice/callCard/VoiceCallCardStatus.tsx` | Shows the connection quality badge |
 | `components/app/interface/settings/UserSettings.tsx` | "Ferret" settings page, Ferret version + unofficial notice, "Source Code" links to Ferret (AGPL) |
 | `components/app/interface/settings/user/Native.tsx` | Ferret name |
-| `components/client/Sounds.tsx` | Plays Ferret's sound pack instead of the silent fallback sounds |
+| `components/client/Sounds.tsx` | Plays Ferret's sounds (or the user's per-sound choice) instead of the silent fallback sounds |
 | `components/ui/themes/LoadTheme.tsx` | Applies the Ferret style on top of the stock theme; removes stale variables when switching back |
 | `components/app/interface/desktop/Titlebar.tsx`, `src/interface/Home.tsx`, `components/auth/src/AuthPage.tsx` | Ferret logo instead of the placeholder wordmark |
 | `components/ui/components/design/CategoryButton.tsx` | **Bug fix:** opening a long dropdown (e.g. microphone picker) scrolled the whole settings page and pushed the dropdown off screen; now only the list scrolls |
