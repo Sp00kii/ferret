@@ -1,6 +1,8 @@
 import { app } from "electron";
 
 import { FERRET } from "./constants";
+// must be evaluated before settings/config stores open the data folder
+import { isDevBuild } from "./devData";
 import { initIncomingCallIpc } from "./incomingCall";
 import { initResync } from "./resync";
 import { initSettingsIpc } from "./settings";
@@ -8,6 +10,7 @@ import { initUpdater } from "./updater";
 import { serveWebApp } from "./webApp";
 
 export { FERRET, WEB_URL } from "./constants";
+export { isDevBuild };
 export { isAppUrl } from "./trust";
 export { registerWebScheme } from "./webApp";
 

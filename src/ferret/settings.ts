@@ -23,6 +23,8 @@ export type FerretSettings = {
   /** Server voice channel ids that should ring when a call starts */
   watchedVoiceChannels: string[];
   showConnectionQuality: boolean;
+  /** Ferret's look (navy/copper); off = stock Stoat theming */
+  ferretStyle: boolean;
 };
 
 const DEFAULT_PRESET = "franklin";
@@ -38,6 +40,7 @@ const DEFAULTS: FerretSettings = {
   },
   watchedVoiceChannels: [],
   showConnectionQuality: true,
+  ferretStyle: true,
 };
 
 const MAX_RINGTONE_BYTES = 10 * 1024 * 1024;
@@ -104,6 +107,9 @@ function applyPatch(patch: unknown): FerretSettings {
 
   if (typeof input.showConnectionQuality === "boolean")
     next.showConnectionQuality = input.showConnectionQuality;
+
+  if (typeof input.ferretStyle === "boolean")
+    next.ferretStyle = input.ferretStyle;
 
   return save(next);
 }

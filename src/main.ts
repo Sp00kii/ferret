@@ -9,6 +9,7 @@ import {
   ferretAppUserModelId,
   initFerret,
   isAppUrl,
+  isDevBuild,
   registerWebScheme,
 } from "./ferret";
 import { initAutoLaunch } from "./native/autoLaunch";
@@ -60,7 +61,8 @@ const acquiredLock = app.requestSingleInstanceLock();
 
 if (acquiredLock) {
   // facilitate ferret:// links
-  registerProtocol();
+  // Ferret mod: dev runs must not take ferret:// links from the installed app
+  if (!isDevBuild) registerProtocol();
 
   // necessary macOS glue
   let pendingDeepLink = findDeepLink(process.argv);

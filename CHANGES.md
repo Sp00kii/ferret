@@ -12,7 +12,8 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | --- | --- |
 | `src/ferret/constants.ts` | Names, IDs, schemes and the unofficial notice |
 | `src/ferret/webApp.ts` | Serves the bundled web client from `ferret-app://app` (SPA routing, custom ringtone file) |
-| `src/ferret/settings.ts` | Ferret settings store (`ferret-settings.json`): ringtone choice (Franklin by default), custom ringtone file |
+| `src/ferret/settings.ts` | Ferret settings store (`ferret-settings.json`): ringtone choice (Franklin by default), custom ringtone file, Ferret style switch |
+| `src/ferret/devData.ts` | `pnpm start` uses its own `%AppData%\Ferret Dev` folder so a dev run never closes or changes the installed Ferret |
 | `src/ferret/incomingCall.ts` | Windows notification + taskbar flash for incoming calls; click opens the call |
 | `src/ferret/resync.ts` | Tells the page to resync on wake from sleep / screen unlock |
 | `src/ferret/updater.ts` | Checks GitHub Releases on startup, offers the update, installs via update.electronjs.org |
@@ -20,7 +21,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | `src/ferret/index.ts` | Wires the above into the main process |
 | `src/world/ferret.ts` | Preload bridge exposing `window.ferret` to the page |
 | `scripts/build-web.mjs` | Builds the web client into `build/web` |
-| `assets/desktop/*` | Placeholder Ferret icons (replaces the Stoat brand-asset submodule) |
+| `assets/desktop/*` | Ferret mascot icons (replaces the Stoat brand-asset submodule) |
 | `.github/workflows/ferret-release.yml` | Builds + publishes the Windows installer for `v*` tags |
 | `README.md`, `CHANGES.md`, `UPSTREAM.md` | Docs |
 
@@ -28,7 +29,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 
 | File | Change |
 | --- | --- |
-| `src/main.ts` | Register/serve the bundled web client; Ferret updater instead of `update-electron-app`; own AppUserModelID; navigation guard compares protocol + host (`origin` is `"null"` for custom schemes) |
+| `src/main.ts` | Register/serve the bundled web client; Ferret updater instead of `update-electron-app`; own AppUserModelID; navigation guard compares protocol + host (`origin` is `"null"` for custom schemes); dev runs don't claim `ferret://` links |
 | `src/native/window.ts` | Load `ferret-app://app/` instead of `https://stoat.chat/app` (`--force-server` still works); `backgroundThrottling: false` so timers keep running in the tray |
 | `src/native/config.ts` | Discord RPC defaults to off |
 | `src/native/deepLink.ts` | `ferret://` links instead of `stoat://` |
@@ -56,6 +57,8 @@ settings, so pulling upstream changes doesn't conflict.
 | `voice/devices.ts` | Follows the preferred mic/output across unplug and replug |
 | `voice/ConnectionQuality.tsx` | Ping / packet-loss badge in the call card |
 | `voice/MicTest.tsx` | Mic test with live level meter |
+| `theme/ferretTheme.ts`, `theme/ferret-style.css` | The Ferret style: navy/copper palette and tighter corners from the Ferret design system, applied only while the "Ferret style" switch is on |
+| `Branding.tsx`, `assets/ferret-logo.png` | Ferret logo + name for the titlebar, home page and login screen |
 
 **Edited upstream files**
 
@@ -66,6 +69,9 @@ settings, so pulling upstream changes doesn't conflict.
 | `components/ui/.../voice/callCard/VoiceCallCardStatus.tsx` | Shows the connection quality badge |
 | `components/app/interface/settings/UserSettings.tsx` | "Ferret" settings page, Ferret version + unofficial notice, "Source Code" links to Ferret (AGPL) |
 | `components/app/interface/settings/user/Native.tsx` | Ferret name |
+| `components/ui/themes/LoadTheme.tsx` | Applies the Ferret style on top of the stock theme; removes stale variables when switching back |
+| `components/app/interface/desktop/Titlebar.tsx`, `src/interface/Home.tsx`, `components/auth/src/AuthPage.tsx` | Ferret logo instead of the placeholder wordmark |
+| `components/ui/components/design/CategoryButton.tsx` | **Bug fix:** opening a long dropdown (e.g. microphone picker) scrolled the whole settings page and pushed the dropdown off screen; now only the list scrolls |
 | `src/index.tsx` | Mounts the incoming call controller |
 | `tsconfig.json` | `@revolt/ferret` path alias |
 | `index.html` | Window title "Ferret" |
