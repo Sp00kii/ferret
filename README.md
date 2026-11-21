@@ -29,9 +29,9 @@ Ferret installs **next to** the official Stoat app: separate install folder, dat
 
 ## Installing
 
-1. Download `ferret-setup.exe` from the [latest release](https://github.com/Sp00kii/ferret/releases/latest) and run it.
+1. Download `Ferret-<version>.Setup.exe` from the [latest release](https://github.com/Sp00kii/ferret/releases/latest) and run it.
 2. **Windows SmartScreen will warn you** because the installer isn't code-signed (signing certificates cost money). Click **More info → Run anyway**.
-3. Ferret installs to `%LocalAppData%\Ferret` and starts automatically. It checks GitHub for new versions on startup and asks before updating.
+3. Ferret installs to `%LocalAppData%\ferret` (settings live in `%AppData%\Ferret`) and starts automatically. It checks GitHub for new versions on startup and asks before updating.
 
 ## Building from source
 
