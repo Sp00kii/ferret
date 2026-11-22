@@ -9,6 +9,7 @@ import { initIncomingCallIpc } from "./incomingCall";
 import { initMiniCall } from "./miniCall";
 import { initResync } from "./resync";
 import { initSettingsIpc } from "./settings";
+import { initToasts } from "./toasts";
 import { initUpdater } from "./updater";
 import { serveWebApp } from "./webApp";
 
@@ -40,4 +41,5 @@ export function initFerret() {
   initHotkeys();
   initMiniCall();
   initDiagnostics();
+  initToasts();
 }

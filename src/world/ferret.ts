@@ -60,6 +60,24 @@ contextBridge.exposeInMainWorld("ferret", {
   onHotkey: (callback: Listener<string>) =>
     subscribe("ferret:hotkey", callback),
 
+  // Ferret notification pop-ups with a reply box
+  toast: {
+    // main page
+    show: (toast: unknown) => ipcRenderer.send("ferret:toast:show", toast),
+    onAction: (callback: Listener<unknown>) =>
+      subscribe("ferret:toast:action", callback),
+    replyResult: (result: unknown) =>
+      ipcRenderer.send("ferret:toast:replyResult", result),
+    // the pop-up window itself
+    onAdd: (callback: Listener<unknown>) =>
+      subscribe("ferret:toast:add", callback),
+    onReplyResult: (callback: Listener<unknown>) =>
+      subscribe("ferret:toast:replyResult", callback),
+    action: (action: unknown) =>
+      ipcRenderer.send("ferret:toast:action", action),
+    resize: (height: number) => ipcRenderer.send("ferret:toast:resize", height),
+  },
+
   // compact call window
   mini: {
     // main page: report the call, receive button presses

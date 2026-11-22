@@ -120,6 +120,13 @@ function watchMainWindow() {
   }
 }
 
+/** Where the compact call window is, if it's showing (toasts avoid it) */
+export function miniCallBounds() {
+  return mini && !mini.isDestroyed() && mini.isVisible()
+    ? mini.getBounds()
+    : undefined;
+}
+
 function focusMain() {
   if (!mainWindow || mainWindow.isDestroyed()) return;
   if (mainWindow.isMinimized()) mainWindow.restore();

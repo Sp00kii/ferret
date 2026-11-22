@@ -12,6 +12,7 @@ import {
   personSoundPath,
   soundboardClipPath,
 } from "./settings";
+import { TOAST_PAGE } from "./toastPage";
 
 /**
  * Must run before the app is ready. `standard` + `secure` give the bundled
@@ -73,6 +74,12 @@ export function serveWebApp() {
     const url = new URL(request.url);
     if (url.host !== FERRET.webHost) {
       return new Response("Not found", { status: 404 });
+    }
+
+    if (url.pathname === "/__ferret/toast") {
+      return new Response(TOAST_PAGE, {
+        headers: { "content-type": "text/html; charset=utf-8" },
+      });
     }
 
     if (url.pathname === "/__ferret/mini") {

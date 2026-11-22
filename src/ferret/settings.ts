@@ -24,6 +24,8 @@ export type FerretSettings = {
   /** Server voice channel ids that should ring when a call starts */
   watchedVoiceChannels: string[];
   showConnectionQuality: boolean;
+  /** Ferret's own pop-ups (with a reply box) instead of Windows notifications */
+  notificationPopups: boolean;
   /** Ferret's look (navy/copper); off = stock Stoat theming */
   ferretStyle: boolean;
   /** Per-sound choices; slots that aren't listed use Ferret's own sound */
@@ -155,6 +157,7 @@ const DEFAULTS: FerretSettings = {
   watchedVoiceChannels: [],
   showConnectionQuality: true,
   ferretStyle: true,
+  notificationPopups: true,
   sounds: {},
   voice: DEFAULT_VOICE,
   soundboard: [],
@@ -252,6 +255,9 @@ function applyPatch(patch: unknown): FerretSettings {
 
   if (typeof input.ferretStyle === "boolean")
     next.ferretStyle = input.ferretStyle;
+
+  if (typeof input.notificationPopups === "boolean")
+    next.notificationPopups = input.notificationPopups;
 
   if (input.voice && typeof input.voice === "object") {
     const v = input.voice as Partial<VoiceSettings>;
