@@ -58,6 +58,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `voice/devices.ts` | Follows the preferred mic/output across unplug and replug |
 | `voice/ConnectionQuality.tsx` | Ping / packet-loss badge in the call card |
 | `voice/MicTest.tsx` | Mic test with live level meter |
+| `presence.ts` | Re-checks who is online when a server's member list is opened or the window regains focus (throttled to once per 30s per server) |
 | `theme/ferretTheme.ts`, `theme/ferret-style.css` | The Ferret style: navy/copper palette and tighter corners from the Ferret design system, applied only while the "Ferret style" switch is on |
 | `Branding.tsx`, `assets/ferret-logo.png` | Ferret logo + name for the titlebar, home page and login screen |
 | `soundLibrary.ts` + `sounds/library/*.ogg` | Pickable sounds for any event (Clicker, Pop, Bell, Blip, Squeak, Boop, Dook) and which file to play per event |
@@ -77,6 +78,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `components/app/interface/desktop/Titlebar.tsx`, `src/interface/Home.tsx`, `components/auth/src/AuthPage.tsx` | Ferret logo instead of the placeholder wordmark |
 | `components/ui/components/design/CategoryButton.tsx` | **Bug fix:** opening a long dropdown (e.g. microphone picker) scrolled the whole settings page and pushed the dropdown off screen; now only the list scrolls |
 | `src/index.tsx` | Mounts the incoming call controller |
+| `src/interface/channels/text/MemberSidebar.tsx` | Refreshes member presence when shown |
 | `tsconfig.json` | `@revolt/ferret` path alias |
 | `index.html` | Window title "Ferret" |
 | `.gitmodules` | `stoat.js` submodule points to `Sp00kii/ferret-sdk` |
@@ -90,6 +92,7 @@ Based on the exact SDK commit the official web client ships (`e88f6aa`).
 | `src/events/v1.ts` | **Presence fix:** on reconnect, refresh already-cached users from the `Ready` snapshot (previously kept stale online/status); clear voice participants before applying the snapshot (ended calls lingered); emit `voiceChannelJoin` / `voiceChannelLeave`; handle `VoiceChannelMove` |
 | `src/events/EventClient.ts` | `checkAlive()`: probe a possibly half-open socket immediately instead of waiting for the next heartbeat |
 | `src/Client.ts` | Event types for the voice events |
+| `src/classes/Server.ts` | `refreshPresence()`: re-check who is online and update cached users in place (Stoat sometimes sends no went-offline event; member sync never updated cached users) |
 
 Nothing here changes what is sent to the Stoat API or websocket beyond what
 the official client already sends (the extra Ping uses the existing heartbeat
