@@ -46,6 +46,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | --- | --- |
 | `src/main.ts` | Register/serve the bundled web client; Ferret updater instead of `update-electron-app`; own AppUserModelID; navigation guard compares protocol + host (`origin` is `"null"` for custom schemes); dev runs don't claim `ferret://` links; **quit fix:** re-quit on a fresh task (on Windows the second `app.quit()` was ignored, leaving the app running without a window, which also broke "Restart now" for updates); Ferret's own installer events; in-app links asking for a new window (middle-click) open inside Ferret |
 | `src/native/window.ts` | Load `ferret-app://app/` instead of `https://stoat.chat/app` (`--force-server` still works); `backgroundThrottling: false` so timers keep running in the tray; `quitApp` copes with an already-closed window; audio autoplay allowed (late joiners were silent, stoatchat/for-web#1743); zoom keys go through Ferret's remembered zoom setting (10% steps); screen share picker starts Ferret's audio helper for "only this app" / "everything except Ferret" |
+| `src/native/discordRpc.ts` | Discord status shows Ferret (its own Discord app, with a Get Ferret button) instead of Stoat |
 | `src/native/config.ts` | Discord RPC defaults to off; settings from the page are only accepted from the Ferret page and only for the known on/off options |
 | `src/config.d.ts` | Adds the missing `startMinimisedToTray` setting to the type |
 | `src/native/discordRpc.ts` | Ferret branding once `FERRET.discordAppId` is set (Stoat's app until then) |
@@ -123,6 +124,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `components/app/interface/settings/user/Native.tsx` | Ferret name |
 | `components/client/Sounds.tsx` | Plays Ferret's sounds (or the user's per-sound / per-person choice) instead of the silent fallback sounds; long custom alert files stop after 5 s |
 | `components/client/NotificationsWorker.tsx` | Passes the message author to the sound player (per-person message sounds); uses Ferret's pop-up when it's switched on |
+| `components/app/interface/settings/user/Native.tsx` | "Discord RPC" switch is called "Discord status" and says it shows Ferret |
 | `components/app/menus/UserContextMenu.tsx` | "Ferret nickname & sounds…" entry (desktop app only); closes the profile it was opened from |
 | `components/app/interface/channels/text/Message.tsx` | Your private nickname for the author; Ferret's link previews under the message |
 | `components/modal/modals/UserProfile.tsx` | Ferret sounds card on profiles |

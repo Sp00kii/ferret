@@ -9,7 +9,6 @@ What's planned, parked and possible. Nothing here is promised.
 | Supporter perks on Ko-fi | Small thank-yous for supporters; features friends rely on stay free. |
 | Signed Windows installer | Removes the Windows "unrecognised app" warning (stoatchat/for-desktop#150). |
 | Ferret community server | A place on Stoat for help, feedback and news. |
-| Ferret in your Discord status | Show Ferret instead of Stoat when the Discord status option is on. |
 
 ## Already done from Stoat's issue tracker
 
@@ -25,7 +24,7 @@ high contrast theme (for-web#588, #64), no new desktop shortcut on every update
 (for-desktop#223), private nicknames for friends (stoatchat discussion #620),
 previews for links Stoat can't preview, personas (masquerade) for role-play
 (for-web#244), an accessibility section with readable fonts, link underlines and
-reduced motion (for-web#220, #64).
+reduced motion (for-web#220, #64), and Ferret in your Discord status.
 
 ## What Stoat users ask for, to decide on
 

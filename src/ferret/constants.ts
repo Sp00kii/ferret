@@ -17,7 +17,7 @@ export const FERRET = {
    * upload assets/desktop/icon.png there as an art asset named "ferret").
    * Empty = keep using Stoat's own Discord app.
    */
-  discordAppId: "",
+  discordAppId: "1574208842869375067",
   unofficialNotice:
     "Unofficial mod of Stoat, not affiliated with or endorsed by Stoat / Revolt Platforms Ltd.",
 } as const;
