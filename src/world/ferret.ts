@@ -50,6 +50,7 @@ contextBridge.exposeInMainWorld("ferret", {
     subscribe("ferret:resync", callback),
 
   checkForUpdates: () => ipcRenderer.invoke("ferret:checkForUpdates"),
+  diagnostics: () => ipcRenderer.invoke("ferret:diagnostics"),
 
   // voice: push-to-talk and global mute / deafen hotkeys
   capturePttBinding: () => ipcRenderer.invoke("ferret:capturePttBinding"),

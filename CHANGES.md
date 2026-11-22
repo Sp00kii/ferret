@@ -19,6 +19,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | `src/ferret/updater.ts` | Checks GitHub Releases on startup, offers the update, installs via update.electronjs.org |
 | `src/ferret/trust.ts` | Only the Ferret page may use Ferret's IPC; URL check for custom schemes |
 | `src/ferret/hotkeys.ts` | Push-to-talk (global input hook via `uiohook-napi`, only running while push-to-talk is on; it only reacts to the one bound key/button) and global mute / deafen shortcuts |
+| `src/ferret/diagnostics.ts` | App facts for the diagnostics panel (versions, OS, uptime; no paths or account info) |
 | `src/ferret/miniCall.ts`, `src/ferret/miniPage.ts` | Compact always-on-top call window shown while in a call and Ferret isn't focused (can be turned off, or closed per call) |
 | `src/ferret/index.ts` | Wires the above into the main process |
 | `src/world/ferret.ts` | Preload bridge exposing `window.ferret` to the page |
@@ -67,6 +68,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `voice/FerretVoice.tsx` | Connects push-to-talk, global shortcuts and the compact call window to the call |
 | `voice/soundboard.ts`, `voice/SoundboardButton.tsx`, `sounds/board/*.ogg` | Soundboard in the call controls with Ferret-synthesised clips (rimshot, air horn, sad trombone, ta-da, …) plus your own uploaded sounds (first 15 s play), 2.5 s cooldown |
 | `voice/VoiceExtrasSettings.tsx` | Settings for the above |
+| `diagnostics/*` | Hidden diagnostics panel (tap the logo on the Ferret settings page 5 times): connection log, websocket event types, "Copy logs". Never records message content, names or ids |
 | `people.ts`, `PeopleSounds.tsx` | Per-person ringtone and message sound, set from the Ferret settings page or a user's right-click menu |
 | `gifs/FavouriteStar.tsx`, `gifs/categories.ts` | Favourite star on every GIF in the picker; hides Gifbox categories named after random GIF ids ("OcIOBa") and adds real ones |
 | `presence.ts` | Re-checks who is online when a server's member list is opened or the window regains focus (throttled to once per 30s per server) |
@@ -79,7 +81,7 @@ settings, so pulling upstream changes doesn't conflict.
 
 | File | Change |
 | --- | --- |
-| `components/client/Controller.ts` | **Presence fix:** reconnect when the network comes back (nothing ever left the `Offline` state before), resync on wake/visibility, cap the reconnect back-off at 30s (was unbounded); honest session name |
+| `components/client/Controller.ts` | **Presence fix:** reconnect when the network comes back (nothing ever left the `Offline` state before), resync on wake/visibility, cap the reconnect back-off at 30s (was unbounded); honest session name; resyncs are logged for diagnostics |
 | `components/rtc/state.tsx` | Voice: show LiveKit's reconnecting state, auto-rejoin after unexpected drops, follow preferred devices |
 | `components/rtc/VoiceProcessor.ts` | Routes the mic through Ferret's mic stage (desktop app only) |
 | `components/ui/.../voice/callCard/VoiceCallCardActions.tsx` | Soundboard button |
@@ -92,7 +94,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `components/ui/themes/LoadTheme.tsx` | Applies the Ferret style on top of the stock theme; removes stale variables when switching back |
 | `components/app/interface/desktop/Titlebar.tsx`, `src/interface/Home.tsx`, `components/auth/src/AuthPage.tsx` | Ferret logo instead of the placeholder wordmark |
 | `components/ui/components/design/CategoryButton.tsx` | **Bug fix:** opening a long dropdown (e.g. microphone picker) scrolled the whole settings page and pushed the dropdown off screen; now only the list scrolls |
-| `src/index.tsx` | Mounts the incoming call controller and the voice extras |
+| `src/index.tsx` | Mounts the incoming call controller, the voice extras and the diagnostics recorder |
 | `components/ui/.../picker/GifPicker.tsx` | Favourite star on GIFs; cleaned-up categories |
 | `components/auth/src/AuthPage.tsx`, `AppUpsell.tsx` | Login panel colours can follow the Ferret style (navy + copper) |
 | `src/interface/channels/text/MemberSidebar.tsx` | Refreshes member presence when shown |

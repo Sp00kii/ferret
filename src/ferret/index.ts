@@ -3,6 +3,7 @@ import { app } from "electron";
 import { FERRET } from "./constants";
 // must be evaluated before settings/config stores open the data folder
 import { isDevBuild } from "./devData";
+import { initDiagnostics } from "./diagnostics";
 import { initHotkeys } from "./hotkeys";
 import { initIncomingCallIpc } from "./incomingCall";
 import { initMiniCall } from "./miniCall";
@@ -38,4 +39,5 @@ export function initFerret() {
   initUpdater();
   initHotkeys();
   initMiniCall();
+  initDiagnostics();
 }
