@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, rmSync, statSync } from "node:fs";
 import path from "node:path";
 
@@ -28,7 +29,19 @@ export type FerretSettings = {
   /** Per-sound choices; slots that aren't listed use Ferret's own sound */
   sounds: Partial<Record<SoundSlot, SoundChoice>>;
   voice: VoiceSettings;
+  /** The user's own soundboard clips, in the order they were added */
+  soundboard: SoundboardClip[];
 };
+
+export type SoundboardClip = {
+  /** Random id; also the file name in <userData>/soundboard */
+  id: string;
+  name: string;
+  /** Absolute path of our copy, set only by the main process */
+  file: string;
+};
+
+const MAX_SOUNDBOARD_CLIPS = 24;
 
 /** A key or mouse button as reported by the global input hook */
 export type PttBinding = { kind: "key" | "mouse"; code: number; label: string };
@@ -125,6 +138,7 @@ const DEFAULTS: FerretSettings = {
   ferretStyle: true,
   sounds: {},
   voice: DEFAULT_VOICE,
+  soundboard: [],
 };
 
 const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
@@ -144,7 +158,8 @@ export function getSettings(): FerretSettings {
     ringtone.preset = "custom";
   if (REMOVED_PRESETS.has(ringtone.preset)) ringtone.preset = DEFAULT_PRESET;
   const voice = { ...DEFAULT_VOICE, ...saved.voice };
-  return { ...DEFAULTS, ...saved, ringtone, voice };
+  const soundboard = Array.isArray(saved.soundboard) ? saved.soundboard : [];
+  return { ...DEFAULTS, ...saved, ringtone, voice, soundboard };
 }
 
 type SettingsListener = (
@@ -279,6 +294,11 @@ export function customSoundPath(slot: string): string | null {
   return file && existsSync(file) ? file : null;
 }
 
+export function soundboardClipPath(id: string): string | null {
+  const clip = getSettings().soundboard.find((entry) => entry.id === id);
+  return clip && existsSync(clip.file) ? clip.file : null;
+}
+
 /**
  * Let the user pick an audio file and keep our own copy (so it survives the
  * original being moved) at <userData>/<folder>/<baseName>.<ext>.
@@ -366,6 +386,52 @@ function resetSounds(): FerretSettings {
   return save({ ...current, sounds: {} });
 }
 
+async function addSoundboardClip(): Promise<FerretSettings> {
+  if (getSettings().soundboard.length >= MAX_SOUNDBOARD_CLIPS) {
+    throw new Error(`You can add up to ${MAX_SOUNDBOARD_CLIPS} sounds`);
+  }
+  const id = randomBytes(6).toString("hex");
+  const picked = await pickAudioFile(
+    "Add a soundboard sound",
+    "soundboard",
+    id,
+  );
+  if (!picked) return getSettings();
+
+  const current = getSettings();
+  const name =
+    path.parse(picked.name).name.replace(/[_-]+/g, " ").trim().slice(0, 32) ||
+    "My sound";
+  return save({
+    ...current,
+    soundboard: [...current.soundboard, { id, name, file: picked.file }],
+  });
+}
+
+function removeSoundboardClip(id: unknown): FerretSettings {
+  const current = getSettings();
+  const clip = current.soundboard.find((entry) => entry.id === id);
+  if (!clip) return current;
+  rmSync(clip.file, { force: true });
+  return save({
+    ...current,
+    soundboard: current.soundboard.filter((entry) => entry !== clip),
+  });
+}
+
+function renameSoundboardClip(id: unknown, name: unknown): FerretSettings {
+  const current = getSettings();
+  if (typeof name !== "string") return current;
+  const clean = name.replace(/\s+/g, " ").trim().slice(0, 32);
+  if (!clean) return current;
+  return save({
+    ...current,
+    soundboard: current.soundboard.map((entry) =>
+      entry.id === id ? { ...entry, name: clean } : entry,
+    ),
+  });
+}
+
 function clearRingtone(): FerretSettings {
   const current = getSettings();
   if (current.ringtone.customFile) {
@@ -406,5 +472,16 @@ export function initSettingsIpc() {
   );
   ipcMain.handle("ferret:resetSounds", (event) =>
     isFromApp(event) ? resetSounds() : null,
+  );
+  ipcMain.handle("ferret:addSoundboardClip", (event) =>
+    isFromApp(event) ? addSoundboardClip() : null,
+  );
+  ipcMain.handle("ferret:removeSoundboardClip", (event, id: unknown) =>
+    isFromApp(event) ? removeSoundboardClip(id) : null,
+  );
+  ipcMain.handle(
+    "ferret:renameSoundboardClip",
+    (event, id: unknown, name: unknown) =>
+      isFromApp(event) ? renameSoundboardClip(id, name) : null,
   );
 }

@@ -11,8 +11,8 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | File | Purpose |
 | --- | --- |
 | `src/ferret/constants.ts` | Names, IDs, schemes and the unofficial notice |
-| `src/ferret/webApp.ts` | Serves the bundled web client from `ferret-app://app` (SPA routing, custom ringtone file) |
-| `src/ferret/settings.ts` | Ferret settings store (`ferret-settings.json`): ringtone choice (Dook Ring by default; removed presets fall back to it), custom ringtone file, Ferret style switch, per-sound choices + custom sound files, voice settings (push-to-talk, noise gate, shortcuts, soundboard volume, compact call window) |
+| `src/ferret/webApp.ts` | Serves the bundled web client from `ferret-app://app` (SPA routing, custom ringtone / sound / soundboard files) |
+| `src/ferret/settings.ts` | Ferret settings store (`ferret-settings.json`): ringtone choice (Dook Ring by default; removed presets fall back to it), custom ringtone file, Ferret style switch, per-sound choices + custom sound files, voice settings (push-to-talk, noise gate, shortcuts, soundboard volume, compact call window), your own soundboard clips (copied to `%AppData%\Ferret\soundboard`, up to 24) |
 | `src/ferret/devData.ts` | `pnpm start` uses its own `%AppData%\Ferret Dev` folder so a dev run never closes or changes the installed Ferret |
 | `src/ferret/incomingCall.ts` | Windows notification + taskbar flash for incoming calls; click opens the call |
 | `src/ferret/resync.ts` | Tells the page to resync on wake from sleep / screen unlock |
@@ -65,7 +65,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `voice/MicTest.tsx` | Mic test with live level meter |
 | `voice/micChain.ts` | Extra mic stage: push-to-talk + noise gate (with level meter) and the soundboard mix-in |
 | `voice/FerretVoice.tsx` | Connects push-to-talk, global shortcuts and the compact call window to the call |
-| `voice/soundboard.ts`, `voice/SoundboardButton.tsx`, `sounds/board/*.ogg` | Soundboard in the call controls with Ferret-synthesised clips (rimshot, air horn, sad trombone, ta-da, …), 2.5 s cooldown |
+| `voice/soundboard.ts`, `voice/SoundboardButton.tsx`, `sounds/board/*.ogg` | Soundboard in the call controls with Ferret-synthesised clips (rimshot, air horn, sad trombone, ta-da, …) plus your own uploaded sounds (first 15 s play), 2.5 s cooldown |
 | `voice/VoiceExtrasSettings.tsx` | Settings for the above |
 | `gifs/FavouriteStar.tsx`, `gifs/categories.ts` | Favourite star on every GIF in the picker; hides Gifbox categories named after random GIF ids ("OcIOBa") and adds real ones |
 | `presence.ts` | Re-checks who is online when a server's member list is opened or the window regains focus (throttled to once per 30s per server) |

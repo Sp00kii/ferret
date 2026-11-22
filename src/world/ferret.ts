@@ -31,6 +31,12 @@ contextBridge.exposeInMainWorld("ferret", {
   clearSound: (slot: string) => ipcRenderer.invoke("ferret:clearSound", slot),
   resetSounds: () => ipcRenderer.invoke("ferret:resetSounds"),
 
+  addSoundboardClip: () => ipcRenderer.invoke("ferret:addSoundboardClip"),
+  removeSoundboardClip: (id: string) =>
+    ipcRenderer.invoke("ferret:removeSoundboardClip", id),
+  renameSoundboardClip: (id: string, name: string) =>
+    ipcRenderer.invoke("ferret:renameSoundboardClip", id, name),
+
   showIncomingCall: (call: unknown) =>
     ipcRenderer.send("ferret:showIncomingCall", call),
   dismissIncomingCall: () => ipcRenderer.send("ferret:dismissIncomingCall"),

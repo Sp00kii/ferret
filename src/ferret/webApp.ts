@@ -6,7 +6,11 @@ import { app, net, protocol } from "electron";
 
 import { FERRET } from "./constants";
 import { MINI_PAGE } from "./miniPage";
-import { customRingtonePath, customSoundPath } from "./settings";
+import {
+  customRingtonePath,
+  customSoundPath,
+  soundboardClipPath,
+} from "./settings";
 
 /**
  * Must run before the app is ready. `standard` + `secure` give the bundled
@@ -90,6 +94,15 @@ export function serveWebApp() {
       return file
         ? net.fetch(pathToFileURL(file).toString())
         : new Response("No custom sound", { status: 404 });
+    }
+
+    if (url.pathname.startsWith("/__ferret/soundboard/")) {
+      const file = soundboardClipPath(
+        url.pathname.slice("/__ferret/soundboard/".length),
+      );
+      return file
+        ? net.fetch(pathToFileURL(file).toString())
+        : new Response("No such sound", { status: 404 });
     }
 
     const index = path.join(root, "index.html");
