@@ -62,7 +62,14 @@ const isSoundSlot = (value: unknown): value is SoundSlot =>
 const DEFAULT_PRESET = "dook-ring";
 
 /** Ringtones removed from Ferret (copyright); people on them move to the default */
-const REMOVED_PRESETS = new Set(["franklin", "discord-halloween", "omori"]);
+const REMOVED_PRESETS = new Set([
+  "franklin",
+  "discord-halloween",
+  "omori",
+  "starburst-candy",
+  "my-phone",
+  "ringtone-231",
+]);
 
 const DEFAULTS: FerretSettings = {
   ringtone: {
