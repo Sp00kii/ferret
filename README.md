@@ -87,7 +87,6 @@ Ferret is licensed under the [GNU AGPL-3.0](LICENSE), like the Stoat projects it
 
 ## Name and artwork
 
-The code is AGPL-3.0, like the Stoat code it's built on. That licence
-covers the code only. The **Ferret name, logo and mascot artwork** are not
-licensed for reuse: forks and copies must use their own name and artwork
-and must not present themselves as Ferret.
+The code is AGPL-3.0, like the Stoat code it's built on. Ferret's own
+name, logo, mascot, icons, sounds, ringtones and website are **not** part of
+that licence: they're © Sp00kii, all rights reserved. See [NOTICE.md](NOTICE.md).
