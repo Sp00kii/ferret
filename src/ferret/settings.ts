@@ -27,6 +27,8 @@ export type FerretSettings = {
   /** Theme and accent colour used while ferretStyle is on */
   ferretTheme: (typeof THEMES)[number];
   ferretAccent: (typeof ACCENTS)[number];
+  /** "#rrggbb" for the custom accent */
+  ferretAccentCustom: string;
   /** Last version whose "What's new" was shown (null = fresh install) */
   lastSeenVersion: string | null;
   /** Page zoom in percent (50-200) */
@@ -50,7 +52,14 @@ export type FerretSettings = {
 
 // keep in sync with the web client's theme/looks.ts
 const THEMES = ["midnight", "cream", "contrast"] as const;
-const ACCENTS = ["copper", "blue", "purple", "pink", "green"] as const;
+const ACCENTS = [
+  "copper",
+  "blue",
+  "purple",
+  "pink",
+  "green",
+  "custom",
+] as const;
 // keep in sync with appIcon.ts (not imported: that pulls in the tray)
 const APP_ICON_IDS = [
   "classic",
@@ -76,10 +85,10 @@ export type PersonSounds = {
   message: SoundChoice | null;
 };
 
-const MAX_PEOPLE = 200;
-const USER_ID = /^[0-9A-Z]{26}$/;
+export const MAX_PEOPLE = 200;
+export const USER_ID = /^[0-9A-Z]{26}$/;
 
-const isPersonKind = (value: unknown): value is PersonSoundKind =>
+export const isPersonKind = (value: unknown): value is PersonSoundKind =>
   value === "ringtone" || value === "message";
 
 export type SoundboardClip = {
@@ -90,7 +99,7 @@ export type SoundboardClip = {
   file: string;
 };
 
-const MAX_SOUNDBOARD_CLIPS = 24;
+export const MAX_SOUNDBOARD_CLIPS = 24;
 
 /** A key or mouse button as reported by the global input hook */
 export type PttBinding = { kind: "key" | "mouse"; code: number; label: string };
@@ -157,7 +166,7 @@ export type SoundChoice = {
   customFileName: string | null;
 };
 
-const isSoundSlot = (value: unknown): value is SoundSlot =>
+export const isSoundSlot = (value: unknown): value is SoundSlot =>
   typeof value === "string" &&
   (SOUND_SLOTS as readonly string[]).includes(value);
 
@@ -192,14 +201,23 @@ const DEFAULTS: FerretSettings = {
   lastSeenVersion: null,
   ferretTheme: "midnight",
   ferretAccent: "copper",
+  ferretAccentCustom: "#F07835",
   sounds: {},
   voice: DEFAULT_VOICE,
   soundboard: [],
   people: {},
 };
 
-const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
-const AUDIO_EXTENSIONS = ["mp3", "ogg", "wav", "m4a", "aac", "flac", "webm"];
+export const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
+export const AUDIO_EXTENSIONS = [
+  "mp3",
+  "ogg",
+  "wav",
+  "m4a",
+  "aac",
+  "flac",
+  "webm",
+];
 
 // before the store creates the file: did Ferret run here before?
 const existingInstall = existsSync(
@@ -237,7 +255,7 @@ export function onSettingsSaved(listener: SettingsListener) {
   listeners.add(listener);
 }
 
-function save(next: FerretSettings) {
+export function save(next: FerretSettings) {
   const previous = getSettings();
   store.store = next;
   if (mainWindow && !mainWindow.isDestroyed()) {
@@ -267,7 +285,7 @@ export function savePttBinding(binding: PttBinding | null) {
  * Apply a settings change coming from the page; the custom sound path can
  * only be changed through the file picker below.
  */
-function applyPatch(patch: unknown): FerretSettings {
+export function applyPatch(patch: unknown): FerretSettings {
   const current = getSettings();
   if (!patch || typeof patch !== "object") return current;
   const input = patch as Partial<FerretSettings>;
@@ -309,6 +327,11 @@ function applyPatch(patch: unknown): FerretSettings {
     next.ferretTheme = input.ferretTheme!;
   if (ACCENTS.includes(input.ferretAccent as never))
     next.ferretAccent = input.ferretAccent!;
+  if (
+    typeof input.ferretAccentCustom === "string" &&
+    /^#[0-9a-f]{6}$/i.test(input.ferretAccentCustom)
+  )
+    next.ferretAccentCustom = input.ferretAccentCustom.toUpperCase();
 
   if (typeof input.appIcon === "string" && APP_ICON_IDS.includes(input.appIcon))
     next.appIcon = input.appIcon;

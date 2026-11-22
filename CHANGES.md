@@ -21,9 +21,10 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | `src/ferret/hotkeys.ts` | Push-to-talk (global input hook via `uiohook-napi`, only running while push-to-talk is on; it only reacts to the one bound key/button) and global mute / deafen shortcuts |
 | `src/ferret/diagnostics.ts` | App facts for the diagnostics panel (versions, OS, uptime; no paths or account info) |
 | `src/ferret/toasts.ts`, `src/ferret/toastPage.ts` | Ferret notification pop-ups in the corner with Reply / Open (can be switched back to Windows notifications) |
-| `src/ferret/appIcon.ts`, `assets/desktop/alt/*` | Alternative app icons (recoloured mascot, incl. albino and silver ferrets) for the window and tray |
+| `src/ferret/appIcon.ts`, `assets/desktop/alt/*` | Alternative app icons (recoloured mascot, incl. albino and silver ferrets) for the window, taskbar button (`.ico` shipped in `resources/alt`) and tray |
 | `src/ferret/zoom.ts` | Zoom is a remembered setting (slider, Ctrl +/−/0, Ctrl + wheel in 10% steps) |
 | `src/ferret/imageCors.ts` | Adds a CORS header to Stoat's image proxy responses so still frames of GIFs can be drawn locally |
+| `src/ferret/backup.ts` | Save / restore a `.ferret-backup` file with all Ferret settings and the user's own sound files (no paths or account data; imports are validated like any other settings change) |
 | `src/ferret/miniCall.ts`, `src/ferret/miniPage.ts` | Compact always-on-top call window shown while in a call and Ferret isn't focused (can be turned off, or closed per call) |
 | `src/ferret/index.ts` | Wires the above into the main process; loads `native/badges.ts`, which upstream never imported (so taskbar badges never worked) |
 | `src/world/ferret.ts` | Preload bridge exposing `window.ferret` to the page |
@@ -67,7 +68,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `settings.ts` | Shared reactive copy of the Ferret settings |
 | `ringtones.ts` + `public/ferret/ringtones/` | Built-in ringtone choices: Ferret originals (Dook Ring by default, Arcade, Marimba Bounce, Retro Phone, Synthwave, Ferret Chime) |
 | `IncomingCalls.tsx` | Detects calls starting, loops the ringtone, shows the call card and the Windows notification |
-| `FerretSettings.tsx` | The "Ferret" settings page |
+| `FerretSettings.tsx`, `settingsTab.ts`, `FerretSettingsLink.tsx` | The "Ferret" settings page, in tabs (Appearance, Calls & voice, Sounds & alerts, App); links to it from Stoat's Voice, Appearance and Notifications pages |
 | `voice/devices.ts` | Follows the preferred mic/output across unplug and replug |
 | `voice/ConnectionQuality.tsx` | Ping / packet-loss badge in the call card |
 | `voice/MicTest.tsx` | Mic test with live level meter |
@@ -82,8 +83,10 @@ settings, so pulling upstream changes doesn't conflict.
 | `badge.tsx` | Taskbar unread badge: mentions + unread DMs/groups, muted channels excluded (stoatchat/for-desktop#213) |
 | `motion/*` | "Pause GIFs and animated emoji until hovered" (stoatchat/for-web#664); follows Windows' animation setting until changed |
 | `QuickSwitcher.tsx` | Ctrl+K quick switcher for DMs, groups, channels and servers (stoatchat/for-desktop#61) |
+| `PersonSoundPickers.tsx`, `ProfileSounds.tsx` | Per-person sound pickers, also on each person's profile |
+| `theme/accent.ts` | Custom accent colour (any colour; readable shades worked out per theme) |
 | `people.ts`, `PeopleSounds.tsx` | Per-person ringtone and message sound, set from the Ferret settings page or a user's right-click menu |
-| `gifs/FavouriteStar.tsx`, `gifs/categories.ts` | Favourite star on every GIF in the picker; hides Gifbox categories named after random GIF ids ("OcIOBa") and adds real ones |
+| `gifs/categories.ts` | Only keeps Gifbox categories with real names (hides ids like "OcIOBa") and adds real ones. (Ferret's own favourite star was removed: Stoat added one.) |
 | `presence.ts` | Re-checks who is online when a server's member list is opened or the window regains focus (throttled to once per 30s per server) |
 | `theme/looks.ts`, `theme/ferretTheme.ts`, `theme/ferret-style.css`, `theme/LookPicker.tsx` | The Ferret style: Midnight (navy), Cream (light) and High contrast themes, five accent colours (copper, blue, purple, pink, green) and tighter corners from the Ferret design system, applied only while the "Ferret style" switch is on. The call window and pop-ups follow the same colours |
 | `Branding.tsx`, `assets/ferret-logo.png` | Ferret logo + name for the titlebar, home page and login screen |
@@ -103,12 +106,14 @@ settings, so pulling upstream changes doesn't conflict.
 | `components/app/interface/settings/user/Native.tsx` | Ferret name |
 | `components/client/Sounds.tsx` | Plays Ferret's sounds (or the user's per-sound / per-person choice) instead of the silent fallback sounds |
 | `components/client/NotificationsWorker.tsx` | Passes the message author to the sound player (per-person message sounds); uses Ferret's pop-up when it's switched on |
-| `components/app/menus/UserContextMenu.tsx` | "Ferret sounds…" entry (desktop app only) |
+| `components/app/menus/UserContextMenu.tsx` | "Ferret sounds…" entry (desktop app only); closes the profile it was opened from |
+| `components/modal/modals/UserProfile.tsx` | Ferret sounds card on profiles |
+| `.../settings/user/voice/VoiceSettings.tsx`, `.../appearance/AppearanceMenu.tsx`, `.../notifications/Notifications.tsx` | Link to the matching Ferret settings tab |
 | `components/ui/themes/LoadTheme.tsx` | Applies the Ferret style (chosen theme + accent) on top of the stock theme; removes stale variables when switching back |
 | `components/app/interface/desktop/Titlebar.tsx`, `src/interface/Home.tsx`, `components/auth/src/AuthPage.tsx` | Ferret logo instead of the placeholder wordmark (`Branding.tsx` text colour follows its surroundings) |
 | `components/ui/components/design/CategoryButton.tsx` | **Bug fix:** opening a long dropdown (e.g. microphone picker) scrolled the whole settings page and pushed the dropdown off screen; now only the list scrolls |
 | `src/index.tsx` | Mounts the incoming call controller, voice extras, diagnostics recorder, pop-up actions and "What's new" |
-| `components/ui/.../picker/GifPicker.tsx` | Favourite star on GIFs; cleaned-up categories |
+| `components/ui/.../picker/GifPicker.tsx` | Cleaned-up categories |
 | `components/auth/src/AuthPage.tsx`, `AppUpsell.tsx` | Login panel colours can follow the Ferret style (navy + copper) |
 | `src/interface/channels/text/MemberSidebar.tsx` | Refreshes member presence when shown |
 | `tsconfig.json` | `@revolt/ferret` path alias |

@@ -51,6 +51,8 @@ contextBridge.exposeInMainWorld("ferret", {
 
   checkForUpdates: () => ipcRenderer.invoke("ferret:checkForUpdates"),
   diagnostics: () => ipcRenderer.invoke("ferret:diagnostics"),
+  exportSettings: () => ipcRenderer.invoke("ferret:exportSettings"),
+  importSettings: () => ipcRenderer.invoke("ferret:importSettings"),
   whatsNew: () => ipcRenderer.invoke("ferret:whatsNew"),
   whatsNewSeen: () => ipcRenderer.invoke("ferret:whatsNewSeen"),
 

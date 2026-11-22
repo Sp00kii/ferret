@@ -131,7 +131,8 @@ const config: ForgeConfig = {
         ? `${ASSET_DIR}/icon.icon`
         : `${ASSET_DIR}/icon`,
     // Ferret mod: ship the bundled web client as resources/web
-    extraResource: ["build/web"],
+    // Ferret mod: + alternative app icons as .ico for the taskbar button
+    extraResource: ["build/web", "assets/desktop/alt"],
   },
   rebuildConfig: {},
   makers,

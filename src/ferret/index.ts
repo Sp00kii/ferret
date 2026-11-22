@@ -4,6 +4,7 @@ import { app } from "electron";
 import "../native/badges";
 
 import { initAppIcon } from "./appIcon";
+import { initBackup } from "./backup";
 import { FERRET } from "./constants";
 // must be evaluated before settings/config stores open the data folder
 import { isDevBuild } from "./devData";
@@ -51,4 +52,5 @@ export function initFerret() {
   initAppIcon();
   initZoom();
   initImageCors();
+  initBackup();
 }
