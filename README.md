@@ -84,3 +84,10 @@ GitHub Actions builds the installer and attaches it to a new release; installed 
 Ferret is licensed under the [GNU AGPL-3.0](LICENSE), like the Stoat projects it is based on. Original work © Revolt Platforms Ltd and the Stoat contributors; Ferret's modifications © Sp00kii.
 
 *Unofficial mod of Stoat, not affiliated with or endorsed by Stoat / Revolt Platforms Ltd.* Ferret uses no Stoat logos or brand assets; the icon is a placeholder.
+
+## Name and artwork
+
+The code is AGPL-3.0, like the Stoat code it's built on. That licence
+covers the code only. The **Ferret name, logo and mascot artwork** are not
+licensed for reuse: forks and copies must use their own name and artwork
+and must not present themselves as Ferret.
