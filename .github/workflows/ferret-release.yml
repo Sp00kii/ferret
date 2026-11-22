@@ -1,14 +1,21 @@
-# Ferret: build the Windows installer for a version tag (e.g. v1.0.0) and
-# publish it as a GitHub Release. The in-app updater (update.electronjs.org)
-# reads the RELEASES + .nupkg files attached here.
+# Ferret: build the installers for a version tag (e.g. v1.0.0) and publish
+# them as a GitHub Release. The in-app updater (update.electronjs.org) reads
+# the RELEASES + .nupkg files attached here.
+#
+# Run it by hand (Actions -> Ferret Release -> Run workflow) to test the
+# builds: nothing is published then, the files are attached to the run.
 name: Ferret Release
 
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
   contents: write
+
+env:
+  IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/v') }}
 
 jobs:
   windows:
@@ -32,6 +39,7 @@ jobs:
           node-version: 24
 
       - name: Use the tag as the app version
+        if: env.IS_RELEASE == 'true'
         shell: bash
         run: npm pkg set version="${GITHUB_REF_NAME#v}"
 
@@ -48,13 +56,86 @@ jobs:
       - name: Build installer
         run: pnpm exec electron-forge make --platform win32 --arch x64 --targets @electron-forge/maker-squirrel
 
+      # a fixed name so the website can always link to the newest installer
+      - name: Add FerretSetup.exe
+        shell: bash
+        run: |
+          cd out/make/squirrel.windows/x64
+          cp ./*Setup.exe FerretSetup.exe
+          ls -la
+
       - name: Publish GitHub Release
+        if: env.IS_RELEASE == 'true'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          ls -la out/make/squirrel.windows/x64
           gh release create "$GITHUB_REF_NAME" \
             out/make/squirrel.windows/x64/* \
             --title "Ferret $GITHUB_REF_NAME" \
             --generate-notes
+
+      - name: Attach test build to the run
+        if: env.IS_RELEASE != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ferret-windows
+          path: out/make/squirrel.windows/x64/FerretSetup.exe
+
+  linux:
+    name: Linux (.deb + .tar.gz)
+    runs-on: ubuntu-latest
+    # the release is created by the Windows job
+    needs: windows
+
+    steps:
+      - name: Checkout (with web + SDK submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install packaging tools
+        run: sudo apt-get update && sudo apt-get install -y fakeroot dpkg
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Use the tag as the app version
+        if: env.IS_RELEASE == 'true'
+        run: npm pkg set version="${GITHUB_REF_NAME#v}"
+
+      - name: Install desktop dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build the Ferret web client
+        run: pnpm web:build
+
+      - name: Build .deb
+        run: pnpm exec electron-forge make --platform linux --arch x64 --targets @electron-forge/maker-deb
+
+      - name: Collect files
+        run: |
+          mkdir dist
+          cp out/make/deb/x64/*.deb dist/ferret-linux-x64.deb
+          tar -C out/Ferret-linux-x64 -czf dist/ferret-linux-x64.tar.gz .
+          ls -la dist
+
+      - name: Add to the GitHub Release
+        if: env.IS_RELEASE == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$GITHUB_REF_NAME" dist/* --clobber
+
+      - name: Attach test build to the run
+        if: env.IS_RELEASE != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ferret-linux
+          path: dist/*

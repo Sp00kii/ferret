@@ -1,3 +1,4 @@
+import { MakerDeb } from "@electron-forge/maker-deb";
 import { MakerFlatpak } from "@electron-forge/maker-flatpak";
 import { MakerFlatpakOptionsConfig } from "@electron-forge/maker-flatpak/dist/Config";
 import { MakerSquirrel } from "@electron-forge/maker-squirrel";
@@ -42,6 +43,23 @@ const makers: ForgeConfig["makers"] = [
       "Copyright (C) 2025 Revolt Platforms LTD; modifications (C) 2026 Sp00kii",
   }),
   new MakerZIP({}),
+  // Ferret mod: .deb for Debian / Ubuntu / Mint
+  new MakerDeb({
+    options: {
+      name: STRINGS.execName,
+      productName: STRINGS.name,
+      genericName: "Chat",
+      description: STRINGS.description,
+      productDescription: STRINGS.description,
+      maintainer: STRINGS.author,
+      homepage: "https://github.com/Sp00kii/ferret",
+      bin: STRINGS.execName,
+      icon: `${ASSET_DIR}/hicolor/512x512.png`,
+      categories: ["Network", "Chat"],
+      mimeType: ["x-scheme-handler/ferret"],
+      section: "net",
+    },
+  }),
   new MakerFlatpak({
     options: {
       id: "io.github.sp00kii.Ferret", // Ferret mod
@@ -149,8 +167,8 @@ const config: ForgeConfig = {
       }
 
       // Ferret mod: the push-to-talk input hook is a native module, so the
-      // Vite bundle can't include it. Ship only the Windows prebuild.
-      if (platform === "win32") {
+      // Vite bundle can't include it. Ship only this platform's prebuild.
+      if (platform === "win32" || platform === "linux") {
         const copy = (from: string, to = from) =>
           fs.cpSync(
             path.join("node_modules", from),
@@ -160,7 +178,7 @@ const config: ForgeConfig = {
         for (const file of ["dist", "LICENSE", "package.json"]) {
           copy(`uiohook-napi/${file}`);
         }
-        copy("uiohook-napi/prebuilds/win32-x64");
+        copy(`uiohook-napi/prebuilds/${platform}-x64`);
         for (const file of [
           "index.js",
           "node-gyp-build.js",

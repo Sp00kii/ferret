@@ -87,7 +87,13 @@ async function setHookRunning(running: boolean) {
   }
 
   if (running) {
-    hook.uIOhook.start();
+    try {
+      hook.uIOhook.start();
+    } catch (error) {
+      // e.g. Linux on Wayland without X11 access
+      console.error("[ferret] push-to-talk input hook failed to start", error);
+      return;
+    }
   } else {
     hook.uIOhook.stop();
     if (pttHeld) {
