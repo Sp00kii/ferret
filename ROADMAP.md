@@ -51,6 +51,19 @@ and [Engadget](https://www.engadget.com/2193599/open-source-discord-alternatives
 | Flatpak / Flathub build for Linux | for-desktop#11 (+15), #77 | Medium | Forge already has a Flatpak maker; Flathub review is the slow part. |
 | macOS build | for-desktop#17, #107 | Hard | Needs a Mac to test and Apple signing (€99 a year) to avoid "app is damaged". |
 
+### Newer requests (checked 2026-11-22)
+
+| Idea | Asked for in | Thoughts |
+| --- | --- | --- |
+| Choose what audio a screen share sends, and stop your own voice / the call echoing in it | for-desktop#247 (13 comments), #335, #261, for-web#1517 | The most discussed desktop problem right now. Fits Ferret well. |
+| Stop Windows turning the app's volume down during calls | for-web#1358 | Windows "communications" ducking; likely fixable in the app. |
+| Don't put a new desktop shortcut on every update | for-desktop#244 | Ferret controls its own installer events, so this is doable. |
+| Nicknames for friends that only you see | stoatchat discussion #620 | Can be done entirely inside Ferret. |
+| Voice stuck on "connecting" on some networks (IPv6) | for-desktop#346 | Worth testing; may need a fallback. |
+| App freezes until restarted on Windows | for-web#1662 | Needs reports from Ferret users; the diagnostics panel helps here. |
+| Builds for Windows on ARM | for-desktop#230 | Possible with an extra build step. |
+| Middle-click on a message link opens the browser | for-desktop#223 | Small fix. |
+
 ### Known Stoat bugs worth checking in Ferret
 
 | Bug | Issue |
