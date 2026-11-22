@@ -31,7 +31,26 @@ export type FerretSettings = {
   voice: VoiceSettings;
   /** The user's own soundboard clips, in the order they were added */
   soundboard: SoundboardClip[];
+  /** Per-person ringtone / message sound, keyed by user id */
+  people: Record<string, PersonSounds>;
 };
+
+export const PERSON_SOUND_KINDS = ["ringtone", "message"] as const;
+export type PersonSoundKind = (typeof PERSON_SOUND_KINDS)[number];
+
+export type PersonSounds = {
+  /** Display name when added, for the settings list */
+  name: string;
+  /** null = use the normal ringtone / message sound */
+  ringtone: SoundChoice | null;
+  message: SoundChoice | null;
+};
+
+const MAX_PEOPLE = 200;
+const USER_ID = /^[0-9A-Z]{26}$/;
+
+const isPersonKind = (value: unknown): value is PersonSoundKind =>
+  value === "ringtone" || value === "message";
 
 export type SoundboardClip = {
   /** Random id; also the file name in <userData>/soundboard */
@@ -139,6 +158,7 @@ const DEFAULTS: FerretSettings = {
   sounds: {},
   voice: DEFAULT_VOICE,
   soundboard: [],
+  people: {},
 };
 
 const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
@@ -159,7 +179,9 @@ export function getSettings(): FerretSettings {
   if (REMOVED_PRESETS.has(ringtone.preset)) ringtone.preset = DEFAULT_PRESET;
   const voice = { ...DEFAULT_VOICE, ...saved.voice };
   const soundboard = Array.isArray(saved.soundboard) ? saved.soundboard : [];
-  return { ...DEFAULTS, ...saved, ringtone, voice, soundboard };
+  const people =
+    saved.people && typeof saved.people === "object" ? saved.people : {};
+  return { ...DEFAULTS, ...saved, ringtone, voice, soundboard, people };
 }
 
 type SettingsListener = (
@@ -280,7 +302,63 @@ function applyPatch(patch: unknown): FerretSettings {
     }
   }
 
+  if (input.people && typeof input.people === "object") {
+    next.people = { ...current.people };
+    for (const [userId, value] of Object.entries(input.people)) {
+      if (!USER_ID.test(userId)) continue;
+      const existing = next.people[userId];
+      // null removes the person (and their custom files)
+      if (value === null) {
+        if (existing) removePersonFiles(existing);
+        delete next.people[userId];
+        continue;
+      }
+      if (!value || typeof value !== "object") continue;
+      if (!existing && Object.keys(next.people).length >= MAX_PEOPLE) continue;
+
+      const person: PersonSounds = existing
+        ? { ...existing }
+        : { name: "", ringtone: null, message: null };
+      const v = value as Partial<Record<string, unknown>>;
+      if (typeof v.name === "string")
+        person.name = v.name.replace(/\s+/g, " ").trim().slice(0, 64);
+
+      for (const kind of PERSON_SOUND_KINDS) {
+        const choice = v[kind];
+        if (choice === null) {
+          // back to the normal sound, keep the custom file only while chosen
+          if (person[kind]?.customFile)
+            rmSync(person[kind]!.customFile!, { force: true });
+          person[kind] = null;
+        } else if (choice && typeof choice === "object") {
+          const id = (choice as { choice?: unknown }).choice;
+          if (typeof id !== "string" || !/^[a-z0-9-]{1,40}$/.test(id)) continue;
+          if (id === "custom" && !person[kind]?.customFile) continue;
+          person[kind] = {
+            choice: id,
+            customFile: person[kind]?.customFile ?? null,
+            customFileName: person[kind]?.customFileName ?? null,
+          };
+        }
+      }
+      next.people[userId] = person;
+    }
+  }
+
   return save(next);
+}
+
+function removePersonFiles(person: PersonSounds) {
+  for (const kind of PERSON_SOUND_KINDS) {
+    const file = person[kind]?.customFile;
+    if (file) rmSync(file, { force: true });
+  }
+}
+
+export function personSoundPath(userId: string, kind: string): string | null {
+  if (!isPersonKind(kind)) return null;
+  const file = getSettings().people[userId]?.[kind]?.customFile;
+  return file && existsSync(file) ? file : null;
 }
 
 export function customRingtonePath(): string | null {
@@ -432,6 +510,47 @@ function renameSoundboardClip(id: unknown, name: unknown): FerretSettings {
   });
 }
 
+async function pickPersonSound(
+  userId: unknown,
+  kind: unknown,
+): Promise<FerretSettings> {
+  if (typeof userId !== "string" || !USER_ID.test(userId)) return getSettings();
+  if (!isPersonKind(kind)) return getSettings();
+  const before = getSettings();
+  if (!before.people[userId] && Object.keys(before.people).length >= MAX_PEOPLE)
+    throw new Error(`You can set sounds for up to ${MAX_PEOPLE} people`);
+
+  const picked = await pickAudioFile(
+    kind === "ringtone"
+      ? "Choose their ringtone"
+      : "Choose their message sound",
+    "people",
+    `${userId}-${kind}`,
+  );
+  if (!picked) return getSettings();
+
+  const current = getSettings();
+  const person = current.people[userId] ?? {
+    name: "",
+    ringtone: null,
+    message: null,
+  };
+  return save({
+    ...current,
+    people: {
+      ...current.people,
+      [userId]: {
+        ...person,
+        [kind]: {
+          choice: "custom",
+          customFile: picked.file,
+          customFileName: picked.name,
+        },
+      },
+    },
+  });
+}
+
 function clearRingtone(): FerretSettings {
   const current = getSettings();
   if (current.ringtone.customFile) {
@@ -472,6 +591,11 @@ export function initSettingsIpc() {
   );
   ipcMain.handle("ferret:resetSounds", (event) =>
     isFromApp(event) ? resetSounds() : null,
+  );
+  ipcMain.handle(
+    "ferret:pickPersonSound",
+    (event, userId: unknown, kind: unknown) =>
+      isFromApp(event) ? pickPersonSound(userId, kind) : null,
   );
   ipcMain.handle("ferret:addSoundboardClip", (event) =>
     isFromApp(event) ? addSoundboardClip() : null,

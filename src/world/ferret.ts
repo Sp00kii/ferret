@@ -31,6 +31,9 @@ contextBridge.exposeInMainWorld("ferret", {
   clearSound: (slot: string) => ipcRenderer.invoke("ferret:clearSound", slot),
   resetSounds: () => ipcRenderer.invoke("ferret:resetSounds"),
 
+  pickPersonSound: (userId: string, kind: string) =>
+    ipcRenderer.invoke("ferret:pickPersonSound", userId, kind),
+
   addSoundboardClip: () => ipcRenderer.invoke("ferret:addSoundboardClip"),
   removeSoundboardClip: (id: string) =>
     ipcRenderer.invoke("ferret:removeSoundboardClip", id),

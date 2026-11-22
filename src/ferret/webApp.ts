@@ -9,6 +9,7 @@ import { MINI_PAGE } from "./miniPage";
 import {
   customRingtonePath,
   customSoundPath,
+  personSoundPath,
   soundboardClipPath,
 } from "./settings";
 
@@ -100,6 +101,15 @@ export function serveWebApp() {
       const file = soundboardClipPath(
         url.pathname.slice("/__ferret/soundboard/".length),
       );
+      return file
+        ? net.fetch(pathToFileURL(file).toString())
+        : new Response("No such sound", { status: 404 });
+    }
+
+    // /__ferret/person/<userId>/<ringtone|message>
+    const person = url.pathname.match(/^\/__ferret\/person\/(\w+)\/(\w+)$/);
+    if (person) {
+      const file = personSoundPath(person[1], person[2]);
       return file
         ? net.fetch(pathToFileURL(file).toString())
         : new Response("No such sound", { status: 404 });
