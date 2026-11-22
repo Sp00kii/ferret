@@ -55,6 +55,10 @@ export type FerretSettings = {
   people: Record<string, PersonSounds>;
   /** Private nicknames for people, keyed by user id; only you see them */
   nicknames: Record<string, string>;
+  /** Names / pictures to post as (Stoat's masquerade), up to 20 */
+  personas: Persona[];
+  /** Persona picked per channel (channel id -> persona id) */
+  personaByChannel: Record<string, string>;
 };
 
 // keep in sync with the web client's theme/looks.ts
@@ -83,6 +87,46 @@ const APP_ICON_IDS = [
 
 export const PERSON_SOUND_KINDS = ["ringtone", "message"] as const;
 export type PersonSoundKind = (typeof PERSON_SOUND_KINDS)[number];
+
+export type Persona = {
+  id: string;
+  /** Shown instead of your name, 1-32 characters */
+  name: string;
+  /** https picture link, or null for your own avatar */
+  avatar: string | null;
+  /** "#rrggbb" name colour (needs Manage Roles), or null */
+  colour: string | null;
+};
+
+export const MAX_PERSONAS = 20;
+const PERSONA_ID = /^[a-z0-9]{1,16}$/;
+
+/** A persona from the page, or null if it isn't valid */
+function cleanPersona(value: unknown): Persona | null {
+  if (!value || typeof value !== "object") return null;
+  const v = value as Record<string, unknown>;
+  if (typeof v.id !== "string" || !PERSONA_ID.test(v.id)) return null;
+  const name =
+    typeof v.name === "string"
+      ? v.name.replace(/\s+/g, " ").trim().slice(0, 32)
+      : "";
+  if (!name) return null;
+  let avatar: string | null = null;
+  if (typeof v.avatar === "string" && v.avatar.trim()) {
+    try {
+      const url = new URL(v.avatar.trim());
+      if (url.protocol === "https:" && url.href.length <= 256)
+        avatar = url.href;
+    } catch {
+      // not a link: no picture
+    }
+  }
+  const colour =
+    typeof v.colour === "string" && /^#[0-9a-f]{6}$/i.test(v.colour)
+      ? v.colour.toUpperCase()
+      : null;
+  return { id: v.id, name, avatar, colour };
+}
 
 export type PersonSounds = {
   /** Display name when added, for the settings list */
@@ -226,6 +270,8 @@ const DEFAULTS: FerretSettings = {
   soundboard: [],
   people: {},
   nicknames: {},
+  personas: [],
+  personaByChannel: {},
 };
 
 export const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
@@ -265,6 +311,11 @@ export function getSettings(): FerretSettings {
     saved.nicknames && typeof saved.nicknames === "object"
       ? saved.nicknames
       : {};
+  const personas = Array.isArray(saved.personas) ? saved.personas : [];
+  const personaByChannel =
+    saved.personaByChannel && typeof saved.personaByChannel === "object"
+      ? saved.personaByChannel
+      : {};
   return {
     ...DEFAULTS,
     ...saved,
@@ -273,6 +324,8 @@ export function getSettings(): FerretSettings {
     soundboard,
     people,
     nicknames,
+    personas,
+    personaByChannel,
   };
 }
 
@@ -435,6 +488,43 @@ export function applyPatch(patch: unknown): FerretSettings {
         customFile: existing?.customFile ?? null,
         customFileName: existing?.customFileName ?? null,
       };
+    }
+  }
+
+  // the whole list at once (add, edit, remove)
+  if (Array.isArray(input.personas)) {
+    const seen = new Set<string>();
+    next.personas = input.personas
+      .map(cleanPersona)
+      .filter((persona): persona is Persona => {
+        if (!persona || seen.has(persona.id)) return false;
+        seen.add(persona.id);
+        return true;
+      })
+      .slice(0, MAX_PERSONAS);
+    // forget picks of personas that are gone
+    next.personaByChannel = Object.fromEntries(
+      Object.entries(current.personaByChannel).filter(([, id]) => seen.has(id)),
+    );
+  }
+
+  if (input.personaByChannel && typeof input.personaByChannel === "object") {
+    const known = new Set(next.personas.map((persona) => persona.id));
+    next.personaByChannel = { ...next.personaByChannel };
+    for (const [channelId, personaId] of Object.entries(
+      input.personaByChannel,
+    )) {
+      if (!/^[0-9A-Z]{26}$/.test(channelId)) continue;
+      if (typeof personaId === "string" && known.has(personaId)) {
+        if (
+          next.personaByChannel[channelId] ||
+          Object.keys(next.personaByChannel).length < 500
+        )
+          next.personaByChannel[channelId] = personaId;
+      } else {
+        // null (or an unknown persona) means "post as yourself"
+        delete next.personaByChannel[channelId];
+      }
     }
   }
 

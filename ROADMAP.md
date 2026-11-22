@@ -23,7 +23,8 @@ notifications (for-desktop#85), voice users who joined later being silent
 high contrast theme (for-web#588, #64), no new desktop shortcut on every update
 (for-desktop#244), middle-clicked message links opening inside the app
 (for-desktop#223), private nicknames for friends (stoatchat discussion #620),
-previews for links Stoat can't preview.
+previews for links Stoat can't preview, personas (masquerade) for role-play
+(for-web#244).
 
 ## What Stoat users ask for, to decide on
 
@@ -36,7 +37,6 @@ and [Engadget](https://www.engadget.com/2193599/open-source-discord-alternatives
 
 | Idea | Asked for in | Effort | Thoughts |
 | --- | --- | --- | --- |
-| Masquerade: post with a different name / avatar (role-play, bots-for-humans) | for-web#244 (+13, 13 comments) | Medium | Stoat's servers already support it with the Masquerade permission; only the app lacks a way to use it. Popular with role-play communities. |
 | Accessibility panel: dyslexia-friendly font, bigger text, link underlines, reduced motion in one place | for-web#220, #64 | Small | Ferret already has zoom, high contrast and paused GIFs; a panel that gathers them plus a font choice would look complete. |
 | Friend links: share a link that opens "Add friend" for you | stoatchat#522 (+4) | Small | A `ferret://` link that fills in the username and asks before sending a friend request. |
 | Tab picks the emoji suggestion (not Enter) | for-web#628 | Small | Behaviour toggle in the composer. |

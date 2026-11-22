@@ -92,6 +92,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `PersonSoundPickers.tsx`, `ProfileSounds.tsx` | Per-person private nickname, sound pickers, "Mute their soundboard" and their soundboard volume, also on each person's profile |
 | `LinkPreviews.tsx` | Discord-style cards for links without a Stoat preview (waits for Stoat's own first; `<link>`, code and spoilers are skipped) |
 | `voice/shareAudio.ts` | Plays the audio helper's sound into a track that's added to the screen share as its sound |
+| `personas.ts`, `PersonaButton.tsx` | Personas: post with another name, picture and (with Manage Roles) name colour using Stoat's own masquerade, picked per channel from a mask button in the message box; only where the server gives you the Masquerade permission |
 | `nicknames.ts` | Private nicknames: your name for someone replaces theirs everywhere in Ferret (not masquerades or webhooks); nothing is sent to Stoat |
 | `Navigation.tsx` | Follows the desktop app's navigation requests (`ferret://` links and middle-clicked in-app links); the page never asked for them, so those links only brought the window forward |
 | `stopSounds.ts`, `StopSoundsButton.tsx` | Tracks playing Ferret sounds: long custom alerts stop after 5 s, previews after a while, and a "Stop sound" button appears while a longer sound plays |
@@ -111,6 +112,7 @@ settings, so pulling upstream changes doesn't conflict.
 | --- | --- |
 | `components/client/Controller.ts` | **Presence fix:** reconnect when the network comes back (nothing ever left the `Offline` state before), resync on wake/visibility, cap the reconnect back-off at 30s (was unbounded); honest session name; resyncs are logged for diagnostics |
 | `components/rtc/state.tsx` | Voice: show LiveKit's reconnecting state, auto-rejoin after unexpected drops, follow preferred devices; the mic processor isn't attached to the soundboard track |
+| `components/state/stores/Draft.ts`, `src/interface/channels/text/Composition.tsx` | Messages (and GIFs) go out as the persona picked for the channel; mask button next to the upload button |
 | `components/modal/modals/ScreenSharePicker.tsx` | Sound choices (No sound / All sound / Only this app / All except Ferret) instead of a Share audio checkbox, when the PC supports them |
 | `components/ui/components/features/voice/callCard/VoiceCallCardPiP.tsx` | One avatar per person in the small call card, not one per mic track (the soundboard track made people show twice) |
 | `components/rtc/components/RoomAudioManager.tsx` | Other people's `ferret-soundboard` tracks follow your soundboard volume / off switch / per-person mute |
