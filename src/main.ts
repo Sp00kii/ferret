@@ -2,9 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { BrowserWindow, app, shell } from "electron";
-import started from "electron-squirrel-startup";
 
-// Ferret mod: replaces update-electron-app (see src/ferret/updater.ts)
 import {
   ferretAppUserModelId,
   initFerret,
@@ -12,11 +10,14 @@ import {
   isDevBuild,
   registerWebScheme,
 } from "./ferret";
+// Ferret mod: replaces update-electron-app (see src/ferret/updater.ts)
+import { handleSquirrelEvent } from "./ferret/squirrel";
 import { initAutoLaunch } from "./native/autoLaunch";
 import { config } from "./native/config";
 import {
   findDeepLink,
   initDeepLinks,
+  openAppLink,
   openDeepLink,
   registerProtocol,
 } from "./native/deepLink";
@@ -43,7 +44,8 @@ if (process.platform === "linux" && process.env.FLATPAK_ID) {
 // Squirrel-specific logic
 // create/remove shortcuts on Windows when installing / uninstalling
 // we just need to close out of the app immediately
-if (started) {
+// Ferret mod: own handler, so updates don't bring back the desktop shortcut
+if (handleSquirrelEvent()) {
   app.quit();
 }
 
@@ -152,6 +154,11 @@ if (acquiredLock) {
 
     // handle links externally
     contents.setWindowOpenHandler(({ url }) => {
+      // Ferret mod: in-app links (e.g. middle-clicked) open inside Ferret
+      if (isAppUrl(url)) {
+        setImmediate(() => openAppLink(url));
+        return { action: "deny" };
+      }
       if (
         url.startsWith("http:") ||
         url.startsWith("https:") ||

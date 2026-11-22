@@ -71,6 +71,31 @@ export function openDeepLink(link: string) {
 }
 
 /**
+ * Ferret mod: open a page of the app itself in the main window. A
+ * middle-click on an in-app link (a reply, a search result) asks for a new
+ * window, which Ferret doesn't allow, so it used to do nothing
+ * (stoatchat/for-desktop#223). Only the path is used, never another site.
+ */
+export function openAppLink(link: string) {
+  let url: URL;
+  try {
+    url = new URL(link);
+  } catch {
+    return;
+  }
+  const target = `${url.pathname}${url.search}${url.hash}`;
+  if (
+    !target.startsWith("/") ||
+    target.startsWith("//") ||
+    target.includes("\\")
+  )
+    return;
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  pending = { id: ++nextId, target };
+  mainWindow.webContents.send("navigate");
+}
+
+/**
  * Let the page fetch the waiting link, and confirm once it has followed it
  *
  * A page reloaded before confirming fetches the same link again; following

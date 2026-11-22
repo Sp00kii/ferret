@@ -12,6 +12,7 @@ import { initDiagnostics } from "./diagnostics";
 import { initHotkeys } from "./hotkeys";
 import { initImageCors } from "./imageCors";
 import { initIncomingCallIpc } from "./incomingCall";
+import { initLinkPreviews } from "./linkPreview";
 import { initMiniCall } from "./miniCall";
 import { initPermissions } from "./permissions";
 import { initResync } from "./resync";
@@ -51,6 +52,7 @@ export function initFerret() {
   initMiniCall();
   initDiagnostics();
   initToasts();
+  initLinkPreviews();
   initAppIcon();
   initZoom();
   initImageCors();

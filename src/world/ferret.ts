@@ -55,6 +55,7 @@ contextBridge.exposeInMainWorld("ferret", {
   importSettings: () => ipcRenderer.invoke("ferret:importSettings"),
   whatsNew: () => ipcRenderer.invoke("ferret:whatsNew"),
   whatsNewSeen: () => ipcRenderer.invoke("ferret:whatsNewSeen"),
+  linkPreview: (url: string) => ipcRenderer.invoke("ferret:linkPreview", url),
 
   // voice: push-to-talk and global mute / deafen hotkeys
   capturePttBinding: () => ipcRenderer.invoke("ferret:capturePttBinding"),

@@ -42,6 +42,8 @@ export type FerretSettings = {
   appIcon: string;
   /** Ferret's own pop-ups (with a reply box) instead of Windows notifications */
   notificationPopups: boolean;
+  /** Ferret makes previews for links Stoat didn't preview */
+  linkPreviews: boolean;
   /** Ferret's look (navy/copper); off = stock Stoat theming */
   ferretStyle: boolean;
   /** Per-sound choices; slots that aren't listed use Ferret's own sound */
@@ -51,6 +53,8 @@ export type FerretSettings = {
   soundboard: SoundboardClip[];
   /** Per-person ringtone / message sound, keyed by user id */
   people: Record<string, PersonSounds>;
+  /** Private nicknames for people, keyed by user id; only you see them */
+  nicknames: Record<string, string>;
 };
 
 // keep in sync with the web client's theme/looks.ts
@@ -88,9 +92,12 @@ export type PersonSounds = {
   message: SoundChoice | null;
   /** Don't play this person's soundboard clips (missing = false) */
   muteSoundboard?: boolean;
+  /** 0-100, volume of this person's clips (missing = 100) */
+  soundboardVolume?: number;
 };
 
 export const MAX_PEOPLE = 200;
+const MAX_NICKNAMES = 500;
 export const USER_ID = /^[0-9A-Z]{26}$/;
 
 export const isPersonKind = (value: unknown): value is PersonSoundKind =>
@@ -206,6 +213,7 @@ const DEFAULTS: FerretSettings = {
   showConnectionQuality: true,
   ferretStyle: true,
   notificationPopups: true,
+  linkPreviews: true,
   appIcon: "classic",
   zoom: 100,
   pauseAnimations: null,
@@ -217,6 +225,7 @@ const DEFAULTS: FerretSettings = {
   voice: DEFAULT_VOICE,
   soundboard: [],
   people: {},
+  nicknames: {},
 };
 
 export const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
@@ -252,7 +261,19 @@ export function getSettings(): FerretSettings {
   const soundboard = Array.isArray(saved.soundboard) ? saved.soundboard : [];
   const people =
     saved.people && typeof saved.people === "object" ? saved.people : {};
-  return { ...DEFAULTS, ...saved, ringtone, voice, soundboard, people };
+  const nicknames =
+    saved.nicknames && typeof saved.nicknames === "object"
+      ? saved.nicknames
+      : {};
+  return {
+    ...DEFAULTS,
+    ...saved,
+    ringtone,
+    voice,
+    soundboard,
+    people,
+    nicknames,
+  };
 }
 
 type SettingsListener = (
@@ -359,6 +380,9 @@ export function applyPatch(patch: unknown): FerretSettings {
   if (typeof input.notificationPopups === "boolean")
     next.notificationPopups = input.notificationPopups;
 
+  if (typeof input.linkPreviews === "boolean")
+    next.linkPreviews = input.linkPreviews;
+
   if (input.voice && typeof input.voice === "object") {
     const v = input.voice as Partial<VoiceSettings>;
     const voice = { ...current.voice };
@@ -414,6 +438,24 @@ export function applyPatch(patch: unknown): FerretSettings {
     }
   }
 
+  if (input.nicknames && typeof input.nicknames === "object") {
+    next.nicknames = { ...current.nicknames };
+    for (const [userId, value] of Object.entries(input.nicknames)) {
+      if (!USER_ID.test(userId)) continue;
+      const name =
+        typeof value === "string"
+          ? value.replace(/\s+/g, " ").trim().slice(0, 32)
+          : "";
+      // an empty name (or null) removes the nickname
+      if (!name) delete next.nicknames[userId];
+      else if (
+        next.nicknames[userId] ||
+        Object.keys(next.nicknames).length < MAX_NICKNAMES
+      )
+        next.nicknames[userId] = name;
+    }
+  }
+
   if (input.people && typeof input.people === "object") {
     next.people = { ...current.people };
     for (const [userId, value] of Object.entries(input.people)) {
@@ -436,6 +478,11 @@ export function applyPatch(patch: unknown): FerretSettings {
         person.name = v.name.replace(/\s+/g, " ").trim().slice(0, 64);
       if (typeof v.muteSoundboard === "boolean")
         person.muteSoundboard = v.muteSoundboard;
+      if (
+        typeof v.soundboardVolume === "number" &&
+        Number.isFinite(v.soundboardVolume)
+      )
+        person.soundboardVolume = clamp(v.soundboardVolume, 0, 100);
 
       for (const kind of PERSON_SOUND_KINDS) {
         const choice = v[kind];

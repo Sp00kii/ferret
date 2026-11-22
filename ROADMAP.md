@@ -20,7 +20,10 @@ notifications (for-desktop#85), voice users who joined later being silent
 (for-desktop#50), taskbar badges (for-desktop#213), quick switcher
 (for-desktop#61), zoom (for-web#273), GIF / emoji autoplay toggle
 (for-web#664), favourite GIFs (stoatchat#555), noise gate (for-web#1011),
-high contrast theme (for-web#588, #64).
+high contrast theme (for-web#588, #64), no new desktop shortcut on every update
+(for-desktop#244), middle-clicked message links opening inside the app
+(for-desktop#223), private nicknames for friends (stoatchat discussion #620),
+previews for links Stoat can't preview.
 
 ## What Stoat users ask for, to decide on
 
@@ -56,13 +59,10 @@ and [Engadget](https://www.engadget.com/2193599/open-source-discord-alternatives
 | Idea | Asked for in | Thoughts |
 | --- | --- | --- |
 | Choose what audio a screen share sends, and stop your own voice / the call echoing in it | for-desktop#247 (13 comments), #335, #261, for-web#1517 | The most discussed desktop problem right now. Fits Ferret well. |
-| Stop Windows turning the app's volume down during calls | for-web#1358 | Windows "communications" ducking; likely fixable in the app. |
-| Don't put a new desktop shortcut on every update | for-desktop#244 | Ferret controls its own installer events, so this is doable. |
-| Nicknames for friends that only you see | stoatchat discussion #620 | Can be done entirely inside Ferret. |
+| Stop Windows turning the app's volume down during calls | for-web#1358 | Not Windows' communications setting (ruled out in the report); the cause is still unknown and needs someone who can reproduce it. |
 | Voice stuck on "connecting" on some networks (IPv6) | for-desktop#346 | Worth testing; may need a fallback. |
 | App freezes until restarted on Windows | for-web#1662 | Needs reports from Ferret users; the diagnostics panel helps here. |
 | Builds for Windows on ARM | for-desktop#230 | Possible with an extra build step. |
-| Middle-click on a message link opens the browser | for-desktop#223 | Small fix. |
 
 ### Known Stoat bugs worth checking in Ferret
 

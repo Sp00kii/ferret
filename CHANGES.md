@@ -18,6 +18,8 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | `src/ferret/resync.ts` | Tells the page to resync on wake from sleep / screen unlock |
 | `src/ferret/updater.ts` | Checks GitHub Releases on startup, offers the update, installs via update.electronjs.org |
 | `src/ferret/trust.ts` | Only the Ferret page may use Ferret's IPC; URL check for custom schemes |
+| `src/ferret/linkPreview.ts` | Previews for links Stoat's server couldn't preview: fetches only public web pages (never this PC or the local network, checked at connect time and on every redirect), no cookies, 512 KB / 6 s limits, returns only title, description, picture URL and colour; can be turned off |
+| `src/ferret/squirrel.ts` | Windows installer events (replaces electron-squirrel-startup): updates only refresh the Start menu shortcut, so a deleted desktop shortcut stays deleted |
 | `src/ferret/permissions.ts` | Permission requests: Ferret's own page keeps everything it uses (mic, camera, screen share, notifications...); embedded players (YouTube, Spotify...) may only go fullscreen and copy, and nothing may open other programs except web and mail links |
 | `src/ferret/hotkeys.ts` | Push-to-talk (global input hook via `uiohook-napi`, only running while push-to-talk is on; it only reacts to the one bound key/button) and global mute / deafen shortcuts |
 | `src/ferret/diagnostics.ts` | App facts for the diagnostics panel (versions, OS, uptime; no paths or account info) |
@@ -41,12 +43,12 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 
 | File | Change |
 | --- | --- |
-| `src/main.ts` | Register/serve the bundled web client; Ferret updater instead of `update-electron-app`; own AppUserModelID; navigation guard compares protocol + host (`origin` is `"null"` for custom schemes); dev runs don't claim `ferret://` links; **quit fix:** re-quit on a fresh task (on Windows the second `app.quit()` was ignored, leaving the app running without a window, which also broke "Restart now" for updates) |
+| `src/main.ts` | Register/serve the bundled web client; Ferret updater instead of `update-electron-app`; own AppUserModelID; navigation guard compares protocol + host (`origin` is `"null"` for custom schemes); dev runs don't claim `ferret://` links; **quit fix:** re-quit on a fresh task (on Windows the second `app.quit()` was ignored, leaving the app running without a window, which also broke "Restart now" for updates); Ferret's own installer events; in-app links asking for a new window (middle-click) open inside Ferret |
 | `src/native/window.ts` | Load `ferret-app://app/` instead of `https://stoat.chat/app` (`--force-server` still works); `backgroundThrottling: false` so timers keep running in the tray; `quitApp` copes with an already-closed window; audio autoplay allowed (late joiners were silent, stoatchat/for-web#1743); zoom keys go through Ferret's remembered zoom setting (10% steps) |
 | `src/native/config.ts` | Discord RPC defaults to off; settings from the page are only accepted from the Ferret page and only for the known on/off options |
 | `src/config.d.ts` | Adds the missing `startMinimisedToTray` setting to the type |
 | `src/native/discordRpc.ts` | Ferret branding once `FERRET.discordAppId` is set (Stoat's app until then) |
-| `src/native/deepLink.ts` | `ferret://` links instead of `stoat://` |
+| `src/native/deepLink.ts` | `ferret://` links instead of `stoat://`; `openAppLink` for middle-clicked in-app links |
 | `src/native/autoLaunch.ts` | Ferret name; start-with-Windows can only be changed from the Ferret page |
 | `src/native/badges.ts` | Ignores a closed window and bad counts |
 | `src/native/tray.ts` | Ferret name; never touches a destroyed window (was "Object has been destroyed" on Quit); uses the chosen app icon |
@@ -86,7 +88,10 @@ settings, so pulling upstream changes doesn't conflict.
 | `badge.tsx` | Taskbar unread badge: mentions + unread DMs/groups, muted channels excluded (stoatchat/for-desktop#213) |
 | `motion/*` | "Pause GIFs and animated emoji until hovered" (stoatchat/for-web#664); follows Windows' animation setting until changed |
 | `QuickSwitcher.tsx` | Ctrl+K quick switcher for DMs, groups, channels and servers (stoatchat/for-desktop#61) |
-| `PersonSoundPickers.tsx`, `ProfileSounds.tsx` | Per-person sound pickers and "Mute their soundboard", also on each person's profile |
+| `PersonSoundPickers.tsx`, `ProfileSounds.tsx` | Per-person private nickname, sound pickers, "Mute their soundboard" and their soundboard volume, also on each person's profile |
+| `LinkPreviews.tsx` | Discord-style cards for links without a Stoat preview (waits for Stoat's own first; `<link>`, code and spoilers are skipped) |
+| `nicknames.ts` | Private nicknames: your name for someone replaces theirs everywhere in Ferret (not masquerades or webhooks); nothing is sent to Stoat |
+| `Navigation.tsx` | Follows the desktop app's navigation requests (`ferret://` links and middle-clicked in-app links); the page never asked for them, so those links only brought the window forward |
 | `stopSounds.ts`, `StopSoundsButton.tsx` | Tracks playing Ferret sounds: long custom alerts stop after 5 s, previews after a while, and a "Stop sound" button appears while a longer sound plays |
 | `theme/accent.ts` | Custom accent colour (any colour; readable shades worked out per theme) |
 | `people.ts`, `PeopleSounds.tsx` | Per-person ringtone and message sound, set from the Ferret settings page or a user's right-click menu |
@@ -112,7 +117,8 @@ settings, so pulling upstream changes doesn't conflict.
 | `components/app/interface/settings/user/Native.tsx` | Ferret name |
 | `components/client/Sounds.tsx` | Plays Ferret's sounds (or the user's per-sound / per-person choice) instead of the silent fallback sounds; long custom alert files stop after 5 s |
 | `components/client/NotificationsWorker.tsx` | Passes the message author to the sound player (per-person message sounds); uses Ferret's pop-up when it's switched on |
-| `components/app/menus/UserContextMenu.tsx` | "Ferret sounds…" entry (desktop app only); closes the profile it was opened from |
+| `components/app/menus/UserContextMenu.tsx` | "Ferret nickname & sounds…" entry (desktop app only); closes the profile it was opened from |
+| `components/app/interface/channels/text/Message.tsx` | Your private nickname for the author; Ferret's link previews under the message |
 | `components/modal/modals/UserProfile.tsx` | Ferret sounds card on profiles |
 | `.../settings/user/voice/VoiceSettings.tsx`, `.../appearance/AppearanceMenu.tsx`, `.../notifications/Notifications.tsx` | Link to the matching Ferret settings tab |
 | `components/ui/themes/LoadTheme.tsx` | Applies the Ferret style (chosen theme + accent) on top of the stock theme; removes stale variables when switching back |
