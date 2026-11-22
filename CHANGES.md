@@ -32,16 +32,16 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | `.github/workflows/ferret-release.yml` | Builds + publishes the Windows installer and Linux .deb / .tar.gz for `v*` tags (after the type check passes); can be run by hand to test builds without publishing |
 | `.github/workflows/ferret-checks.yml`, `scripts/check-types.mjs` | Type check on every push (`pnpm check`); a failing check blocks releases |
 | `site/`, `.github/workflows/ferret-site.yml` | The website (https://sp00kii.github.io/ferret/), published to GitHub Pages |
-| `README.md`, `CHANGES.md`, `UPSTREAM.md` | Docs |
+| `README.md`, `CHANGES.md`, `UPSTREAM.md`, `ROADMAP.md` | Docs (ROADMAP: on-hold ideas and what Stoat users ask for) |
 
 **Edited upstream files**
 
 | File | Change |
 | --- | --- |
 | `src/main.ts` | Register/serve the bundled web client; Ferret updater instead of `update-electron-app`; own AppUserModelID; navigation guard compares protocol + host (`origin` is `"null"` for custom schemes); dev runs don't claim `ferret://` links; **quit fix:** re-quit on a fresh task (on Windows the second `app.quit()` was ignored, leaving the app running without a window, which also broke "Restart now" for updates) |
-| `src/native/window.ts` | Zoom keys go through Ferret's zoom setting (10% steps, remembered). |
-| `src/native/window.ts` (earlier) | Load `ferret-app://app/` instead of `https://stoat.chat/app` (`--force-server` still works); `backgroundThrottling: false` so timers keep running in the tray; `quitApp` copes with an already-closed window; audio autoplay allowed (late joiners were silent, stoatchat/for-web#1743) |
+| `src/native/window.ts` | Load `ferret-app://app/` instead of `https://stoat.chat/app` (`--force-server` still works); `backgroundThrottling: false` so timers keep running in the tray; `quitApp` copes with an already-closed window; audio autoplay allowed (late joiners were silent, stoatchat/for-web#1743); zoom keys go through Ferret's remembered zoom setting (10% steps) |
 | `src/native/config.ts` | Discord RPC defaults to off |
+| `src/native/discordRpc.ts` | Ferret branding once `FERRET.discordAppId` is set (Stoat's app until then) |
 | `src/native/deepLink.ts` | `ferret://` links instead of `stoat://` |
 | `src/native/autoLaunch.ts` | Ferret name |
 | `src/native/badges.ts` | Ignores a closed window and bad counts |

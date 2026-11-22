@@ -10,6 +10,14 @@ export const FERRET = {
   webScheme: "ferret-app",
   webHost: "app",
   repo: "Sp00kii/ferret",
+  website: "https://sp00kii.github.io/ferret/",
+  /**
+   * Discord "Rich Presence" app for the Discord status. Paste the
+   * Application ID from discord.com/developers/applications here (and
+   * upload assets/desktop/icon.png there as an art asset named "ferret").
+   * Empty = keep using Stoat's own Discord app.
+   */
+  discordAppId: "",
   unofficialNotice:
     "Unofficial mod of Stoat, not affiliated with or endorsed by Stoat / Revolt Platforms Ltd.",
 } as const;
