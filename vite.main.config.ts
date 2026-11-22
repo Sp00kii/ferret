@@ -4,7 +4,8 @@ import { defineConfig } from "vite";
 export default defineConfig({
   build: {
     rollupOptions: {
-      external: ["node-pipewire"],
+      // Ferret mod: uiohook-napi is a native module, copied in by forge
+      external: ["node-pipewire", "uiohook-napi"],
     },
   },
 });

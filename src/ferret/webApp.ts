@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import { app, net, protocol } from "electron";
 
 import { FERRET } from "./constants";
+import { MINI_PAGE } from "./miniPage";
 import { customRingtonePath, customSoundPath } from "./settings";
 
 /**
@@ -67,6 +68,12 @@ export function serveWebApp() {
     const url = new URL(request.url);
     if (url.host !== FERRET.webHost) {
       return new Response("Not found", { status: 404 });
+    }
+
+    if (url.pathname === "/__ferret/mini") {
+      return new Response(MINI_PAGE, {
+        headers: { "content-type": "text/html; charset=utf-8" },
+      });
     }
 
     if (url.pathname === "/__ferret/ringtone") {

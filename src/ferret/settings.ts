@@ -27,7 +27,47 @@ export type FerretSettings = {
   ferretStyle: boolean;
   /** Per-sound choices; slots that aren't listed use Ferret's own sound */
   sounds: Partial<Record<SoundSlot, SoundChoice>>;
+  voice: VoiceSettings;
 };
+
+/** A key or mouse button as reported by the global input hook */
+export type PttBinding = { kind: "key" | "mouse"; code: number; label: string };
+
+export type VoiceSettings = {
+  pushToTalk: boolean;
+  /** Set only by the capture flow in hotkeys.ts */
+  pttBinding: PttBinding | null;
+  /** Keep the mic open this long after releasing the key */
+  pttReleaseMs: number;
+  /** Silence the mic below noiseGateDb (keyboard clicks, background hum) */
+  noiseGate: boolean;
+  noiseGateDb: number;
+  /** Electron accelerators, e.g. "Ctrl+Shift+M" */
+  muteHotkey: string | null;
+  deafenHotkey: string | null;
+  /** 0-100 */
+  soundboardVolume: number;
+  /** Small always-on-top window with who's talking while you're elsewhere */
+  compactCallWindow: boolean;
+};
+
+const DEFAULT_VOICE: VoiceSettings = {
+  pushToTalk: false,
+  pttBinding: null,
+  pttReleaseMs: 200,
+  noiseGate: false,
+  noiseGateDb: -50,
+  muteHotkey: null,
+  deafenHotkey: null,
+  soundboardVolume: 60,
+  compactCallWindow: true,
+};
+
+/** Modifiers + one key, e.g. Ctrl+Shift+M or F13 (validated again on register) */
+const ACCELERATOR = /^(?:(?:Ctrl|Alt|Shift|Super)\+){0,3}[A-Za-z0-9]{1,9}$/;
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, Math.round(value)));
 
 /** Customisable sounds, named like the web client's sound controller */
 export const SOUND_SLOTS = [
@@ -84,6 +124,7 @@ const DEFAULTS: FerretSettings = {
   showConnectionQuality: true,
   ferretStyle: true,
   sounds: {},
+  voice: DEFAULT_VOICE,
 };
 
 const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
@@ -102,15 +143,35 @@ export function getSettings(): FerretSettings {
   if (!saved.ringtone?.preset && ringtone.customFile)
     ringtone.preset = "custom";
   if (REMOVED_PRESETS.has(ringtone.preset)) ringtone.preset = DEFAULT_PRESET;
-  return { ...DEFAULTS, ...saved, ringtone };
+  const voice = { ...DEFAULT_VOICE, ...saved.voice };
+  return { ...DEFAULTS, ...saved, ringtone, voice };
+}
+
+type SettingsListener = (
+  next: FerretSettings,
+  previous: FerretSettings,
+) => void;
+const listeners = new Set<SettingsListener>();
+
+/** Main-process code that reacts to settings (hotkeys, compact window) */
+export function onSettingsSaved(listener: SettingsListener) {
+  listeners.add(listener);
 }
 
 function save(next: FerretSettings) {
+  const previous = getSettings();
   store.store = next;
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send("ferret:settings", next);
   }
+  for (const listener of listeners) listener(next, previous);
   return next;
+}
+
+/** Store a push-to-talk binding captured by hotkeys.ts */
+export function savePttBinding(binding: PttBinding | null) {
+  const current = getSettings();
+  return save({ ...current, voice: { ...current.voice, pttBinding: binding } });
 }
 
 /**
@@ -154,6 +215,38 @@ function applyPatch(patch: unknown): FerretSettings {
 
   if (typeof input.ferretStyle === "boolean")
     next.ferretStyle = input.ferretStyle;
+
+  if (input.voice && typeof input.voice === "object") {
+    const v = input.voice as Partial<VoiceSettings>;
+    const voice = { ...current.voice };
+    for (const key of [
+      "pushToTalk",
+      "noiseGate",
+      "compactCallWindow",
+    ] as const) {
+      if (typeof v[key] === "boolean") voice[key] = v[key];
+    }
+    if (typeof v.pttReleaseMs === "number" && Number.isFinite(v.pttReleaseMs))
+      voice.pttReleaseMs = clamp(v.pttReleaseMs, 0, 1500);
+    if (typeof v.noiseGateDb === "number" && Number.isFinite(v.noiseGateDb))
+      voice.noiseGateDb = clamp(v.noiseGateDb, -90, -10);
+    if (
+      typeof v.soundboardVolume === "number" &&
+      Number.isFinite(v.soundboardVolume)
+    )
+      voice.soundboardVolume = clamp(v.soundboardVolume, 0, 100);
+    for (const key of ["muteHotkey", "deafenHotkey"] as const) {
+      const value = v[key];
+      if (
+        value === null ||
+        (typeof value === "string" && ACCELERATOR.test(value))
+      )
+        voice[key] = value;
+    }
+    // the binding itself only comes from the capture flow; the page may clear it
+    if (v.pttBinding === null) voice.pttBinding = null;
+    next.voice = voice;
+  }
 
   if (input.sounds && typeof input.sounds === "object") {
     next.sounds = { ...current.sounds };

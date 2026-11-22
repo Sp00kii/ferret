@@ -147,6 +147,29 @@ const config: ForgeConfig = {
           { recursive: true },
         );
       }
+
+      // Ferret mod: the push-to-talk input hook is a native module, so the
+      // Vite bundle can't include it. Ship only the Windows prebuild.
+      if (platform === "win32") {
+        const copy = (from: string, to = from) =>
+          fs.cpSync(
+            path.join("node_modules", from),
+            path.join(buildPath, "node_modules", to),
+            { recursive: true },
+          );
+        for (const file of ["dist", "LICENSE", "package.json"]) {
+          copy(`uiohook-napi/${file}`);
+        }
+        copy("uiohook-napi/prebuilds/win32-x64");
+        for (const file of [
+          "index.js",
+          "node-gyp-build.js",
+          "package.json",
+          "LICENSE",
+        ]) {
+          copy(`node-gyp-build/${file}`);
+        }
+      }
     },
   },
   plugins: [

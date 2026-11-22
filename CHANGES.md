@@ -12,12 +12,14 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | --- | --- |
 | `src/ferret/constants.ts` | Names, IDs, schemes and the unofficial notice |
 | `src/ferret/webApp.ts` | Serves the bundled web client from `ferret-app://app` (SPA routing, custom ringtone file) |
-| `src/ferret/settings.ts` | Ferret settings store (`ferret-settings.json`): ringtone choice (Dook Ring by default; removed copyrighted presets fall back to it), custom ringtone file, Ferret style switch, per-sound choices + custom sound files |
+| `src/ferret/settings.ts` | Ferret settings store (`ferret-settings.json`): ringtone choice (Dook Ring by default; removed presets fall back to it), custom ringtone file, Ferret style switch, per-sound choices + custom sound files, voice settings (push-to-talk, noise gate, shortcuts, soundboard volume, compact call window) |
 | `src/ferret/devData.ts` | `pnpm start` uses its own `%AppData%\Ferret Dev` folder so a dev run never closes or changes the installed Ferret |
 | `src/ferret/incomingCall.ts` | Windows notification + taskbar flash for incoming calls; click opens the call |
 | `src/ferret/resync.ts` | Tells the page to resync on wake from sleep / screen unlock |
 | `src/ferret/updater.ts` | Checks GitHub Releases on startup, offers the update, installs via update.electronjs.org |
 | `src/ferret/trust.ts` | Only the Ferret page may use Ferret's IPC; URL check for custom schemes |
+| `src/ferret/hotkeys.ts` | Push-to-talk (global input hook via `uiohook-napi`, only running while push-to-talk is on; it only reacts to the one bound key/button) and global mute / deafen shortcuts |
+| `src/ferret/miniCall.ts`, `src/ferret/miniPage.ts` | Compact always-on-top call window shown while in a call and Ferret isn't focused (can be turned off, or closed per call) |
 | `src/ferret/index.ts` | Wires the above into the main process |
 | `src/world/ferret.ts` | Preload bridge exposing `window.ferret` to the page |
 | `scripts/build-web.mjs` | Builds the web client into `build/web` |
@@ -37,8 +39,10 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | `src/native/autoLaunch.ts` | Ferret name |
 | `src/native/tray.ts` | Ferret name; never touches a destroyed window (was "Object has been destroyed" on Quit) |
 | `src/preload.ts` | Loads the Ferret bridge |
-| `forge.config.ts` | Ferret name/executable/installer, icon URL, bundles `build/web`, fails early if it's missing, publisher repo |
-| `package.json` | Name, product name (→ separate `%AppData%\Ferret` data folder), version, repo, web build scripts; removed `update-electron-app` |
+| `forge.config.ts` | Ferret name/executable/installer, icon URL, bundles `build/web`, fails early if it's missing, publisher repo; copies the `uiohook-napi` Windows prebuild into the package |
+| `vite.main.config.ts` | `uiohook-napi` stays external (native module) |
+| `pnpm-workspace.yaml` | `uiohook-napi` ships prebuilt binaries, no install script needed |
+| `package.json` | Name, product name (→ separate `%AppData%\Ferret` data folder), version, repo, web build scripts; removed `update-electron-app`; added `uiohook-napi` |
 | `.gitmodules` | Removed the Stoat `assets` submodule; added `web` |
 | `.gitignore` | Ignore `build/` |
 
@@ -59,6 +63,10 @@ settings, so pulling upstream changes doesn't conflict.
 | `voice/devices.ts` | Follows the preferred mic/output across unplug and replug |
 | `voice/ConnectionQuality.tsx` | Ping / packet-loss badge in the call card |
 | `voice/MicTest.tsx` | Mic test with live level meter |
+| `voice/micChain.ts` | Extra mic stage: push-to-talk + noise gate (with level meter) and the soundboard mix-in |
+| `voice/FerretVoice.tsx` | Connects push-to-talk, global shortcuts and the compact call window to the call |
+| `voice/soundboard.ts`, `voice/SoundboardButton.tsx`, `sounds/board/*.ogg` | Soundboard in the call controls with Ferret-synthesised clips (rimshot, air horn, sad trombone, ta-da, …), 2.5 s cooldown |
+| `voice/VoiceExtrasSettings.tsx` | Settings for the above |
 | `gifs/FavouriteStar.tsx`, `gifs/categories.ts` | Favourite star on every GIF in the picker; hides Gifbox categories named after random GIF ids ("OcIOBa") and adds real ones |
 | `presence.ts` | Re-checks who is online when a server's member list is opened or the window regains focus (throttled to once per 30s per server) |
 | `theme/ferretTheme.ts`, `theme/ferret-style.css` | The Ferret style: navy/copper palette and tighter corners from the Ferret design system, applied only while the "Ferret style" switch is on |
@@ -72,6 +80,8 @@ settings, so pulling upstream changes doesn't conflict.
 | --- | --- |
 | `components/client/Controller.ts` | **Presence fix:** reconnect when the network comes back (nothing ever left the `Offline` state before), resync on wake/visibility, cap the reconnect back-off at 30s (was unbounded); honest session name |
 | `components/rtc/state.tsx` | Voice: show LiveKit's reconnecting state, auto-rejoin after unexpected drops, follow preferred devices |
+| `components/rtc/VoiceProcessor.ts` | Routes the mic through Ferret's mic stage (desktop app only) |
+| `components/ui/.../voice/callCard/VoiceCallCardActions.tsx` | Soundboard button |
 | `components/ui/.../voice/callCard/VoiceCallCardStatus.tsx` | Shows the connection quality badge |
 | `components/app/interface/settings/UserSettings.tsx` | "Ferret" settings page, Ferret version + unofficial notice, "Source Code" links to Ferret (AGPL) |
 | `components/app/interface/settings/user/Native.tsx` | Ferret name |
@@ -79,7 +89,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `components/ui/themes/LoadTheme.tsx` | Applies the Ferret style on top of the stock theme; removes stale variables when switching back |
 | `components/app/interface/desktop/Titlebar.tsx`, `src/interface/Home.tsx`, `components/auth/src/AuthPage.tsx` | Ferret logo instead of the placeholder wordmark |
 | `components/ui/components/design/CategoryButton.tsx` | **Bug fix:** opening a long dropdown (e.g. microphone picker) scrolled the whole settings page and pushed the dropdown off screen; now only the list scrolls |
-| `src/index.tsx` | Mounts the incoming call controller |
+| `src/index.tsx` | Mounts the incoming call controller and the voice extras |
 | `components/ui/.../picker/GifPicker.tsx` | Favourite star on GIFs; cleaned-up categories |
 | `components/auth/src/AuthPage.tsx`, `AppUpsell.tsx` | Login panel colours can follow the Ferret style (navy + copper) |
 | `src/interface/channels/text/MemberSidebar.tsx` | Refreshes member presence when shown |
