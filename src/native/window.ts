@@ -13,10 +13,13 @@ import {
 
 import windowIconAsset from "../../assets/desktop/icon.png?asset";
 import { WEB_URL } from "../ferret/constants";
+import { stepZoom } from "../ferret/zoom";
 
 import { config } from "./config";
 import { updateTrayMenu } from "./tray";
 import { startVirtualMic } from "./virtualMic";
+
+// Ferret mod
 
 // global reference to main window
 export let mainWindow: BrowserWindow;
@@ -133,22 +136,20 @@ export function createMainWindow() {
 
   // rebind zoom controls to be more sensible
   mainWindow.webContents.on("before-input-event", (event, input) => {
+    // Ferret mod: 10% steps, remembered as a Ferret setting (zoom slider)
+    if (input.type !== "keyDown") return;
     if (input.control && (input.key === "=" || input.key === "+")) {
       // zoom in (+)
       event.preventDefault();
-      mainWindow.webContents.setZoomLevel(
-        mainWindow.webContents.getZoomLevel() + 1,
-      );
+      stepZoom(1);
     } else if (input.control && input.key === "-") {
       // zoom out (-)
       event.preventDefault();
-      mainWindow.webContents.setZoomLevel(
-        mainWindow.webContents.getZoomLevel() - 1,
-      );
+      stepZoom(-1);
     } else if (input.control && input.key === "0") {
       // reset zoom to default.
       event.preventDefault();
-      mainWindow.webContents.setZoomLevel(0);
+      stepZoom(0);
     } else if (
       input.key === "F5" ||
       ((input.control || input.meta) && input.key.toLowerCase() === "r")

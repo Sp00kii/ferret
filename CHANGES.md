@@ -22,8 +22,10 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | `src/ferret/diagnostics.ts` | App facts for the diagnostics panel (versions, OS, uptime; no paths or account info) |
 | `src/ferret/toasts.ts`, `src/ferret/toastPage.ts` | Ferret notification pop-ups in the corner with Reply / Open (can be switched back to Windows notifications) |
 | `src/ferret/appIcon.ts`, `assets/desktop/alt/*` | Alternative app icons (recoloured mascot, incl. albino and silver ferrets) for the window and tray |
+| `src/ferret/zoom.ts` | Zoom is a remembered setting (slider, Ctrl +/−/0, Ctrl + wheel in 10% steps) |
+| `src/ferret/imageCors.ts` | Adds a CORS header to Stoat's image proxy responses so still frames of GIFs can be drawn locally |
 | `src/ferret/miniCall.ts`, `src/ferret/miniPage.ts` | Compact always-on-top call window shown while in a call and Ferret isn't focused (can be turned off, or closed per call) |
-| `src/ferret/index.ts` | Wires the above into the main process |
+| `src/ferret/index.ts` | Wires the above into the main process; loads `native/badges.ts`, which upstream never imported (so taskbar badges never worked) |
 | `src/world/ferret.ts` | Preload bridge exposing `window.ferret` to the page |
 | `scripts/build-web.mjs` | Builds the web client into `build/web` |
 | `assets/desktop/*` | Ferret mascot icons (replaces the Stoat brand-asset submodule) |
@@ -37,10 +39,12 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | File | Change |
 | --- | --- |
 | `src/main.ts` | Register/serve the bundled web client; Ferret updater instead of `update-electron-app`; own AppUserModelID; navigation guard compares protocol + host (`origin` is `"null"` for custom schemes); dev runs don't claim `ferret://` links; **quit fix:** re-quit on a fresh task (on Windows the second `app.quit()` was ignored, leaving the app running without a window, which also broke "Restart now" for updates) |
-| `src/native/window.ts` | Load `ferret-app://app/` instead of `https://stoat.chat/app` (`--force-server` still works); `backgroundThrottling: false` so timers keep running in the tray; `quitApp` copes with an already-closed window; audio autoplay allowed (late joiners were silent, stoatchat/for-web#1743) |
+| `src/native/window.ts` | Zoom keys go through Ferret's zoom setting (10% steps, remembered). |
+| `src/native/window.ts` (earlier) | Load `ferret-app://app/` instead of `https://stoat.chat/app` (`--force-server` still works); `backgroundThrottling: false` so timers keep running in the tray; `quitApp` copes with an already-closed window; audio autoplay allowed (late joiners were silent, stoatchat/for-web#1743) |
 | `src/native/config.ts` | Discord RPC defaults to off |
 | `src/native/deepLink.ts` | `ferret://` links instead of `stoat://` |
 | `src/native/autoLaunch.ts` | Ferret name |
+| `src/native/badges.ts` | Ignores a closed window and bad counts |
 | `src/native/tray.ts` | Ferret name; never touches a destroyed window (was "Object has been destroyed" on Quit); uses the chosen app icon |
 | `src/preload.ts` | Loads the Ferret bridge |
 | `forge.config.ts` | Ferret name/executable/installer, icon URL, bundles `build/web`, fails early if it's missing, publisher repo; .deb maker for Linux; copies the `uiohook-napi` prebuild for the platform into the package |
@@ -75,6 +79,9 @@ settings, so pulling upstream changes doesn't conflict.
 | `notifications/toasts.tsx` | Sends new-message notifications to the pop-ups; sends replies typed there as a normal reply |
 | `theme/IconPicker.tsx`, `public/ferret/icons/` | App icon picker |
 | `whatsNew/*` | "What's new in Ferret" pop-up, shown once after an update (and from About) |
+| `badge.tsx` | Taskbar unread badge: mentions + unread DMs/groups, muted channels excluded (stoatchat/for-desktop#213) |
+| `motion/*` | "Pause GIFs and animated emoji until hovered" (stoatchat/for-web#664); follows Windows' animation setting until changed |
+| `QuickSwitcher.tsx` | Ctrl+K quick switcher for DMs, groups, channels and servers (stoatchat/for-desktop#61) |
 | `people.ts`, `PeopleSounds.tsx` | Per-person ringtone and message sound, set from the Ferret settings page or a user's right-click menu |
 | `gifs/FavouriteStar.tsx`, `gifs/categories.ts` | Favourite star on every GIF in the picker; hides Gifbox categories named after random GIF ids ("OcIOBa") and adds real ones |
 | `presence.ts` | Re-checks who is online when a server's member list is opened or the window regains focus (throttled to once per 30s per server) |

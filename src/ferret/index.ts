@@ -1,11 +1,15 @@
 import { app } from "electron";
 
+// loads the taskbar badge IPC handler (never imported upstream)
+import "../native/badges";
+
 import { initAppIcon } from "./appIcon";
 import { FERRET } from "./constants";
 // must be evaluated before settings/config stores open the data folder
 import { isDevBuild } from "./devData";
 import { initDiagnostics } from "./diagnostics";
 import { initHotkeys } from "./hotkeys";
+import { initImageCors } from "./imageCors";
 import { initIncomingCallIpc } from "./incomingCall";
 import { initMiniCall } from "./miniCall";
 import { initResync } from "./resync";
@@ -13,6 +17,7 @@ import { initSettingsIpc } from "./settings";
 import { initToasts } from "./toasts";
 import { initUpdater } from "./updater";
 import { serveWebApp } from "./webApp";
+import { initZoom } from "./zoom";
 
 export { FERRET, WEB_URL } from "./constants";
 export { isDevBuild };
@@ -44,4 +49,6 @@ export function initFerret() {
   initDiagnostics();
   initToasts();
   initAppIcon();
+  initZoom();
+  initImageCors();
 }

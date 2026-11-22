@@ -9,6 +9,9 @@ const nativeIcons: Record<number, NativeImage> = {};
 let sessionBus: dbus.MessageBus | null;
 
 export async function setBadgeCount(count: number) {
+  // Ferret mod: the window can be closed (tray) or recreated
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  count = Number.isInteger(count) ? Math.max(0, count) : 0;
   switch (process.platform) {
     case "win32":
     case "linux":
@@ -66,4 +69,7 @@ export async function setBadgeCount(count: number) {
   }
 }
 
-ipcMain.on("setBadgeCount", (_event, count: number) => setBadgeCount(count));
+ipcMain.on(
+  "setBadgeCount",
+  (_event, count: number) => void setBadgeCount(count).catch(() => {}),
+); // Ferret mod: never an unhandled rejection

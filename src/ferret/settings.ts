@@ -29,6 +29,10 @@ export type FerretSettings = {
   ferretAccent: (typeof ACCENTS)[number];
   /** Last version whose "What's new" was shown (null = fresh install) */
   lastSeenVersion: string | null;
+  /** Page zoom in percent (50-200) */
+  zoom: number;
+  /** Still GIFs / animated emoji until hovered; null = follow Windows' "show animations" */
+  pauseAnimations: boolean | null;
   /** Alternative app icon id (see appIcon.ts) */
   appIcon: string;
   /** Ferret's own pop-ups (with a reply box) instead of Windows notifications */
@@ -183,6 +187,8 @@ const DEFAULTS: FerretSettings = {
   ferretStyle: true,
   notificationPopups: true,
   appIcon: "classic",
+  zoom: 100,
+  pauseAnimations: null,
   lastSeenVersion: null,
   ferretTheme: "midnight",
   ferretAccent: "copper",
@@ -241,6 +247,16 @@ function save(next: FerretSettings) {
   return next;
 }
 
+const clampZoom = (value: number) =>
+  Math.min(200, Math.max(50, Math.round(value / 5) * 5));
+
+/** Zoom from the keyboard / mouse wheel (zoom.ts) */
+export function saveZoom(value: number) {
+  const current = getSettings();
+  const zoom = clampZoom(value);
+  return zoom === current.zoom ? current : save({ ...current, zoom });
+}
+
 /** Store a push-to-talk binding captured by hotkeys.ts */
 export function savePttBinding(binding: PttBinding | null) {
   const current = getSettings();
@@ -296,6 +312,15 @@ function applyPatch(patch: unknown): FerretSettings {
 
   if (typeof input.appIcon === "string" && APP_ICON_IDS.includes(input.appIcon))
     next.appIcon = input.appIcon;
+
+  if (typeof input.zoom === "number" && Number.isFinite(input.zoom))
+    next.zoom = clampZoom(input.zoom);
+
+  if (
+    typeof input.pauseAnimations === "boolean" ||
+    input.pauseAnimations === null
+  )
+    next.pauseAnimations = input.pauseAnimations;
 
   if (typeof input.notificationPopups === "boolean")
     next.notificationPopups = input.notificationPopups;
