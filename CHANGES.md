@@ -30,6 +30,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | `src/ferret/index.ts` | Wires the above into the main process; loads `native/badges.ts`, which upstream never imported (so taskbar badges never worked) |
 | `src/world/ferret.ts` | Preload bridge exposing `window.ferret` to the page |
 | `scripts/build-web.mjs` | Builds the web client into `build/web` |
+| `scripts/make-sounds.mjs` | Makes the Ferret noises pack, Boop and the Happy dook clip from the Dook chirp with ffmpeg; no recordings |
 | `assets/desktop/*` | Ferret mascot icons (replaces the Stoat brand-asset submodule) |
 | `.github/workflows/ferret-release.yml` | Builds + publishes the Windows installer and Linux .deb / .tar.gz for `v*` tags (after the type check passes); can be run by hand to test builds without publishing |
 | `.github/workflows/ferret-checks.yml`, `scripts/check-types.mjs` | Type check on every push (`pnpm check`); a failing check blocks releases |
@@ -76,7 +77,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `voice/MicTest.tsx` | Mic test with live level meter |
 | `voice/micChain.ts` | Extra mic stage: push-to-talk + noise gate (with level meter) and the soundboard mix-in |
 | `voice/FerretVoice.tsx` | Connects push-to-talk, global shortcuts and the compact call window to the call |
-| `voice/soundboard.ts`, `voice/SoundboardButton.tsx`, `sounds/board/*.ogg` | Soundboard in the call controls with Ferret-synthesised clips (rimshot, air horn, sad trombone, ta-da, …) plus your own uploaded sounds (first 15 s play), 2.5 s cooldown; the panel is drawn at page level above the button, because the call bar cuts off anything sticking out of it |
+| `voice/soundboard.ts`, `voice/SoundboardButton.tsx`, `sounds/board/*.ogg` | Soundboard in the call controls with Ferret-synthesised clips (rimshot, air horn, sad trombone, ta-da, …) plus your own uploaded sounds (first 15 s play), 2.5 s cooldown, volume slider in the panel; the panel is drawn at page level above the button, because the call bar cuts off anything sticking out of it |
 | `voice/VoiceExtrasSettings.tsx` | Settings for the above |
 | `diagnostics/*` | Hidden diagnostics panel (tap the logo on the Ferret settings page 5 times): connection log, websocket event types, "Copy logs". Never records message content, names or ids |
 | `notifications/toasts.tsx` | Sends new-message notifications to the pop-ups; sends replies typed there as a normal reply |
@@ -93,7 +94,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `theme/looks.ts`, `theme/ferretTheme.ts`, `theme/ferret-style.css`, `theme/LookPicker.tsx` | The Ferret style: Midnight (navy), Cream (light) and High contrast themes, five accent colours (copper, blue, purple, pink, green) and tighter corners from the Ferret design system, applied only while the "Ferret style" switch is on. The call window and pop-ups follow the same colours |
 | `Branding.tsx`, `assets/ferret-logo.png` | Ferret logo + name for the titlebar, home page and login screen |
 | `soundLibrary.ts` + `sounds/library/*.ogg` | Pickable sounds for any event (Clicker, Pop, Bell, Blip, Squeak, Boop, Dook) and which file to play per event |
-| `noises.ts` + `sounds/noises/*.ogg` | "Ferret noises" pack: synthesised dooks, hisses and squeaks for every sound, plus the Dook Party ringtone |
+| `noises.ts` + `sounds/noises/*.ogg` | "Ferret noises" pack: the Dook chirp in a different pattern for every event (dook-dook for messages, rising dooks when someone joins...), plus the Dook Party ringtone; made by `scripts/make-sounds.mjs` |
 | `sounds.ts` + `sounds/*.ogg` | Ferret's own synthesised sound pack (message chime, mute/deafen, voice join/leave, stream, ringtones). The open-source fallback sounds are silent placeholders, plus a click for messages |
 
 **Edited upstream files**
@@ -114,6 +115,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `.../settings/user/voice/VoiceSettings.tsx`, `.../appearance/AppearanceMenu.tsx`, `.../notifications/Notifications.tsx` | Link to the matching Ferret settings tab |
 | `components/ui/themes/LoadTheme.tsx` | Applies the Ferret style (chosen theme + accent) on top of the stock theme; removes stale variables when switching back |
 | `components/app/interface/desktop/Titlebar.tsx`, `src/interface/Home.tsx`, `components/auth/src/AuthPage.tsx` | Ferret logo instead of the placeholder wordmark (`Branding.tsx` text colour follows its surroundings) |
+| `components/app/interface/desktop/Titlebar.tsx`, `components/modal/modals/Settings.tsx`, `components/ui/components/design/Dialog.tsx` | **Bug fix:** settings and dialogs covered the title bar, hiding minimise / maximise / close; they now start below it |
 | `components/ui/components/design/CategoryButton.tsx` | **Bug fix:** opening a long dropdown (e.g. microphone picker) scrolled the whole settings page and pushed the dropdown off screen; now only the list scrolls |
 | `src/index.tsx` | Mounts the incoming call controller, voice extras, diagnostics recorder, pop-up actions and "What's new" |
 | `components/ui/.../picker/GifPicker.tsx` | Cleaned-up categories |
