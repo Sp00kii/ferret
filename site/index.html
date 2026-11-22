@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ferret: Stoat with a few more tricks</title>
+<meta name="description" content="Ferret is a free, unofficial desktop app for Stoat with push to talk, a soundboard, ringtones, replying from notifications and themes. Same servers, same account.">
+<meta property="og:title" content="Ferret: Stoat with a few more tricks">
+<meta property="og:description" content="A free, unofficial desktop app for Stoat with push to talk, a soundboard, ringtones and more.">
+<meta property="og:image" content="https://sp00kii.github.io/ferret/assets/ferret.png">
+<meta name="theme-color" content="#101426">
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Gabarito:wght@600;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top">
+  <a class="brand" href="#">
+    <img src="assets/ferret.png" alt="" width="36" height="36">
+    <span>Ferret</span>
+  </a>
+  <nav aria-label="Page">
+    <a href="#features">Features</a>
+    <a href="#safety">Is it safe?</a>
+    <a href="https://github.com/Sp00kii/ferret">GitHub</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="pitch">
+      <h1>Stoat, with a few more tricks.</h1>
+      <p class="lede">
+        Ferret is a free desktop app for Stoat. Same servers, same account, same
+        friends, plus push to talk, a soundboard, ringtones and replying straight
+        from notifications.
+      </p>
+      <div class="get">
+        <a class="button primary" id="dl-windows" href="https://github.com/Sp00kii/ferret/releases/latest">
+          Download for Windows
+        </a>
+        <a class="button" id="dl-linux" href="https://github.com/Sp00kii/ferret/releases/latest">
+          Linux (.deb)
+        </a>
+      </div>
+      <p class="fine" id="release-line">
+        Free and open source. Updates itself on Windows.
+      </p>
+    </div>
+
+    <!-- A working miniature of Ferret's corner pop-up and call window -->
+    <div class="scene" aria-label="What Ferret looks like on your desktop">
+      <div class="toast" id="toast">
+        <div class="pic">B</div>
+        <div class="toast-main">
+          <div class="toast-top"><strong>Bandit</strong><span>#general, Ferret Den</span></div>
+          <p class="toast-body">you hopping on tonight? we're doing the raid at 9</p>
+          <form class="reply" id="reply">
+            <label class="sr" for="reply-text">Reply to Bandit</label>
+            <input id="reply-text" placeholder="Reply…" maxlength="120" autocomplete="off">
+            <button type="submit">Send</button>
+          </form>
+          <p class="toast-status" id="reply-status" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <div class="call">
+        <div class="call-head">
+          <span class="live" aria-hidden="true"></span>
+          <div><strong>Raid night</strong><span id="call-time">Ferret Den, 12:41</span></div>
+        </div>
+        <ul class="people" id="people">
+          <li data-speaking><span class="av">S</span>Sp00kii</li>
+          <li><span class="av">B</span>Bandit</li>
+          <li><span class="av">D</span>Dook Master<i>muted</i></li>
+        </ul>
+        <div class="call-buttons">
+          <button type="button" id="mute" aria-pressed="false">Mute</button>
+          <button type="button" id="ring" aria-pressed="false">Play ringtone</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features" id="features" aria-labelledby="features-title">
+    <h2 id="features-title">What Ferret adds</h2>
+
+    <div class="groups">
+      <div class="group">
+        <h3>In calls</h3>
+        <dl>
+          <dt>Push to talk</dt>
+          <dd>Hold a key or a side mouse button to talk, even while you're in a game.</dd>
+          <dt>Mic sensitivity</dt>
+          <dd>A noise gate keeps keyboard clicks and fans out of the call.</dd>
+          <dt>Mute and deafen shortcuts</dt>
+          <dd>Work anywhere on your PC, not just in Ferret.</dd>
+          <dt>Compact call window</dt>
+          <dd>A small card on top of other apps shows who's talking. Turn it off if you'd rather not.</dd>
+          <dt>Reconnects on its own</dt>
+          <dd>After sleep, a Wi-Fi blip or a dropped call, Ferret gets you back in.</dd>
+        </dl>
+      </div>
+
+      <div class="group">
+        <h3>Messages and calls</h3>
+        <dl>
+          <dt>Reply from notifications</dt>
+          <dd>New messages pop up in the corner with a reply box.</dd>
+          <dt>Ringtones</dt>
+          <dd>Calls ring like a phone, with Ferret-made tones or your own file.</dd>
+          <dt>Sounds for specific people</dt>
+          <dd>Give your best friend their own ringtone so you know without looking.</dd>
+          <dt>Favourite GIFs</dt>
+          <dd>Star the ones you keep sending.</dd>
+        </dl>
+      </div>
+
+      <div class="group">
+        <h3>Make it yours</h3>
+        <dl>
+          <dt>Themes</dt>
+          <dd>Midnight, Cream and High contrast, in five accent colours.</dd>
+          <dt>App icons</dt>
+          <dd>Ten of them, including albino and silver ferrets.</dd>
+          <dt>Every sound</dt>
+          <dd>Swap any notification or call sound for one of ours or your own.</dd>
+        </dl>
+        <div class="icons" aria-hidden="true">
+          <img src="assets/icon-albino.png" alt="" width="48" height="48">
+          <img src="assets/icon-cream.png" alt="" width="48" height="48">
+          <img src="assets/icon-pink.png" alt="" width="48" height="48">
+          <img src="assets/icon-blue.png" alt="" width="48" height="48">
+          <img src="assets/icon-silver.png" alt="" width="48" height="48">
+        </div>
+      </div>
+    </div>
+
+    <div class="board">
+      <h3>The soundboard</h3>
+      <p>Everyone in the call hears these. Try them.</p>
+      <div class="clips">
+        <button type="button" data-clip="rimshot">Ba-dum-tss</button>
+        <button type="button" data-clip="airhorn">Air horn</button>
+        <button type="button" data-clip="sad-trombone">Sad trombone</button>
+        <button type="button" data-clip="tada">Ta-da!</button>
+        <button type="button" data-clip="happy-dook">Happy dook</button>
+      </div>
+      <p class="fine">Or upload your own sounds in the app.</p>
+    </div>
+  </section>
+
+  <section class="safety" id="safety" aria-labelledby="safety-title">
+    <h2 id="safety-title">Is it safe?</h2>
+    <dl class="faq">
+      <dt>Do I need a new account?</dt>
+      <dd>No. You log in with your normal Stoat account and talk to the same people on the same servers.</dd>
+
+      <dt>Can other people tell I'm using Ferret?</dt>
+      <dd>Only if you tell them. Ferret talks to Stoat the same way the official app does. It doesn't automate your account, scrape anything or act as a bot.</dd>
+
+      <dt>Is it official?</dt>
+      <dd>No. Ferret is an unofficial mod of Stoat, not affiliated with or endorsed by Stoat / Revolt Platforms Ltd. If something breaks, report it to Ferret, not to Stoat.</dd>
+
+      <dt>Can I check what it does?</dt>
+      <dd>Yes. All the code is on <a href="https://github.com/Sp00kii/ferret">GitHub</a> under the AGPL-3.0 licence, with a list of every change made to Stoat's app.</dd>
+
+      <dt>Windows says it doesn't recognise the app</dt>
+      <dd>Ferret isn't code-signed yet, which costs money every year. Click "More info", then "Run anyway". Only download Ferret from this page or GitHub.</dd>
+
+      <dt>What about Mac?</dt>
+      <dd>Not yet. Windows and Linux for now.</dd>
+    </dl>
+  </section>
+</main>
+
+<footer class="bottom">
+  <img src="assets/ferret.png" alt="" width="44" height="44">
+  <div>
+    <p>Ferret is made by Sp00kii. If it makes your calls better, you can <a href="https://ko-fi.com/ferretdev">support it on Ko-fi</a>.</p>
+    <p class="fine">Unofficial mod of Stoat, not affiliated with or endorsed by Stoat / Revolt Platforms Ltd. Source code: <a href="https://github.com/Sp00kii/ferret">github.com/Sp00kii/ferret</a> (AGPL-3.0).</p>
+  </div>
+</footer>
+
+<script src="site.js"></script>
+</body>
+</html>

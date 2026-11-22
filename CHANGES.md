@@ -27,8 +27,9 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | `src/world/ferret.ts` | Preload bridge exposing `window.ferret` to the page |
 | `scripts/build-web.mjs` | Builds the web client into `build/web` |
 | `assets/desktop/*` | Ferret mascot icons (replaces the Stoat brand-asset submodule) |
-| `.github/workflows/ferret-release.yml` | Builds + publishes the Windows installer for `v*` tags (after the type check passes) |
+| `.github/workflows/ferret-release.yml` | Builds + publishes the Windows installer and Linux .deb / .tar.gz for `v*` tags (after the type check passes); can be run by hand to test builds without publishing |
 | `.github/workflows/ferret-checks.yml`, `scripts/check-types.mjs` | Type check on every push (`pnpm check`); a failing check blocks releases |
+| `site/`, `.github/workflows/ferret-site.yml` | The website (https://sp00kii.github.io/ferret/), published to GitHub Pages |
 | `README.md`, `CHANGES.md`, `UPSTREAM.md` | Docs |
 
 **Edited upstream files**
@@ -42,7 +43,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | `src/native/autoLaunch.ts` | Ferret name |
 | `src/native/tray.ts` | Ferret name; never touches a destroyed window (was "Object has been destroyed" on Quit); uses the chosen app icon |
 | `src/preload.ts` | Loads the Ferret bridge |
-| `forge.config.ts` | Ferret name/executable/installer, icon URL, bundles `build/web`, fails early if it's missing, publisher repo; copies the `uiohook-napi` Windows prebuild into the package |
+| `forge.config.ts` | Ferret name/executable/installer, icon URL, bundles `build/web`, fails early if it's missing, publisher repo; .deb maker for Linux; copies the `uiohook-napi` prebuild for the platform into the package |
 | `vite.main.config.ts` | `uiohook-napi` stays external (native module) |
 | `pnpm-workspace.yaml` | `uiohook-napi` ships prebuilt binaries, no install script needed |
 | `package.json` | Name, product name (→ separate `%AppData%\Ferret` data folder), version, repo, web build scripts; removed `update-electron-app`; added `uiohook-napi` |
