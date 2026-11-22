@@ -41,6 +41,10 @@ jobs:
       - name: Build the Ferret web client
         run: pnpm web:build
 
+      # a type error stops the release here, before anything is published
+      - name: Type check
+        run: node scripts/check-types.mjs
+
       - name: Build installer
         run: pnpm exec electron-forge make --platform win32 --arch x64 --targets @electron-forge/maker-squirrel
 

@@ -1,0 +1,38 @@
+# Ferret: type-check every push to main (and pull requests), so problems show
+# up long before a release is tagged.
+name: Ferret Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  types:
+    name: Type check
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout (with web + SDK submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install desktop dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build the Ferret web client
+        run: pnpm web:build
+
+      - name: Type check
+        run: node scripts/check-types.mjs

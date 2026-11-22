@@ -67,6 +67,10 @@ export function createMainWindow() {
       // Ferret mod: keep heartbeats, ringtone timers and presence updates on
       // schedule while the window is minimised or hidden in the tray
       backgroundThrottling: false,
+      // Ferret mod: people joining a call after you were silent when
+      // Chromium blocked audio autoplay (stoatchat/for-web#1743); it also
+      // lets the ringtone play before you've clicked anything
+      autoplayPolicy: "no-user-gesture-required",
     },
   });
 

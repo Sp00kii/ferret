@@ -22,7 +22,8 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | `src/world/ferret.ts` | Preload bridge exposing `window.ferret` to the page |
 | `scripts/build-web.mjs` | Builds the web client into `build/web` |
 | `assets/desktop/*` | Ferret mascot icons (replaces the Stoat brand-asset submodule) |
-| `.github/workflows/ferret-release.yml` | Builds + publishes the Windows installer for `v*` tags |
+| `.github/workflows/ferret-release.yml` | Builds + publishes the Windows installer for `v*` tags (after the type check passes) |
+| `.github/workflows/ferret-checks.yml`, `scripts/check-types.mjs` | Type check on every push (`pnpm check`); a failing check blocks releases |
 | `README.md`, `CHANGES.md`, `UPSTREAM.md` | Docs |
 
 **Edited upstream files**
@@ -30,7 +31,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | File | Change |
 | --- | --- |
 | `src/main.ts` | Register/serve the bundled web client; Ferret updater instead of `update-electron-app`; own AppUserModelID; navigation guard compares protocol + host (`origin` is `"null"` for custom schemes); dev runs don't claim `ferret://` links; **quit fix:** re-quit on a fresh task (on Windows the second `app.quit()` was ignored, leaving the app running without a window, which also broke "Restart now" for updates) |
-| `src/native/window.ts` | Load `ferret-app://app/` instead of `https://stoat.chat/app` (`--force-server` still works); `backgroundThrottling: false` so timers keep running in the tray; `quitApp` copes with an already-closed window |
+| `src/native/window.ts` | Load `ferret-app://app/` instead of `https://stoat.chat/app` (`--force-server` still works); `backgroundThrottling: false` so timers keep running in the tray; `quitApp` copes with an already-closed window; audio autoplay allowed (late joiners were silent, stoatchat/for-web#1743) |
 | `src/native/config.ts` | Discord RPC defaults to off |
 | `src/native/deepLink.ts` | `ferret://` links instead of `stoat://` |
 | `src/native/autoLaunch.ts` | Ferret name |
@@ -58,6 +59,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `voice/devices.ts` | Follows the preferred mic/output across unplug and replug |
 | `voice/ConnectionQuality.tsx` | Ping / packet-loss badge in the call card |
 | `voice/MicTest.tsx` | Mic test with live level meter |
+| `gifs/FavouriteStar.tsx`, `gifs/categories.ts` | Favourite star on every GIF in the picker; hides Gifbox categories named after random GIF ids ("OcIOBa") and adds real ones |
 | `presence.ts` | Re-checks who is online when a server's member list is opened or the window regains focus (throttled to once per 30s per server) |
 | `theme/ferretTheme.ts`, `theme/ferret-style.css` | The Ferret style: navy/copper palette and tighter corners from the Ferret design system, applied only while the "Ferret style" switch is on |
 | `Branding.tsx`, `assets/ferret-logo.png` | Ferret logo + name for the titlebar, home page and login screen |
@@ -78,6 +80,8 @@ settings, so pulling upstream changes doesn't conflict.
 | `components/app/interface/desktop/Titlebar.tsx`, `src/interface/Home.tsx`, `components/auth/src/AuthPage.tsx` | Ferret logo instead of the placeholder wordmark |
 | `components/ui/components/design/CategoryButton.tsx` | **Bug fix:** opening a long dropdown (e.g. microphone picker) scrolled the whole settings page and pushed the dropdown off screen; now only the list scrolls |
 | `src/index.tsx` | Mounts the incoming call controller |
+| `components/ui/.../picker/GifPicker.tsx` | Favourite star on GIFs; cleaned-up categories |
+| `components/auth/src/AuthPage.tsx`, `AppUpsell.tsx` | Login panel colours can follow the Ferret style (navy + copper) |
 | `src/interface/channels/text/MemberSidebar.tsx` | Refreshes member presence when shown |
 | `tsconfig.json` | `@revolt/ferret` path alias |
 | `index.html` | Window title "Ferret" |
