@@ -13,6 +13,8 @@ import {
 
 import windowIconAsset from "../../assets/desktop/icon.png?asset";
 import { WEB_URL } from "../ferret/constants";
+import { startShareAudio, takeShareAudioMode } from "../ferret/shareAudio";
+// Ferret mod
 import { stepZoom } from "../ferret/zoom";
 
 import { config } from "./config";
@@ -235,10 +237,16 @@ export function createMainWindow() {
           ipcMain.once(
             "screenPickerCallback",
             (_, idx: number, audio: boolean) => {
-              if (idx < 0 || idx > sources.length) {
+              // Ferret mod: the picker can choose "only this app" or
+              // "everything except Ferret", captured by Ferret's own helper
+              const mode = takeShareAudioMode();
+              if (idx < 0 || idx >= sources.length) {
                 callback({});
+              } else if (audio && (mode === "app" || mode === "exceptFerret")) {
+                callback({ video: sources[idx] });
+                startShareAudio(mode, sources[idx].id, mainWindow.webContents);
               } else {
-                audio
+                audio && mode !== "none"
                   ? callback({
                       video: sources[idx],
                       audio: "loopback",

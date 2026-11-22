@@ -9,6 +9,7 @@
   "scripts": {
     "web:build": "node scripts/build-web.mjs",
     "web:build:fast": "node scripts/build-web.mjs --skip-install",
+    "audio:build": "node scripts/build-audio-helper.mjs",
     "start": "electron-forge start -- --no-sandbox",
     "package": "electron-forge package",
     "make": "electron-forge make",

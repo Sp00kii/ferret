@@ -19,6 +19,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | `src/ferret/updater.ts` | Checks GitHub Releases on startup, offers the update, installs via update.electronjs.org |
 | `src/ferret/trust.ts` | Only the Ferret page may use Ferret's IPC; URL check for custom schemes |
 | `src/ferret/linkPreview.ts` | Previews for links Stoat's server couldn't preview: fetches only public web pages (never this PC or the local network, checked at connect time and on every redirect), no cookies, 512 KB / 6 s limits, returns only title, description, picture URL and colour; can be turned off |
+| `src/ferret/shareAudio.ts`, `native/audio-capture/main.cpp`, `scripts/build-audio-helper.mjs` | Screen share sound choices: no sound, all sound, only the shared app, or everything except Ferret (no echo). The last two use Ferret's own small Windows 11 helper (process loopback; built in the release workflow, shipped as `resources/native`), which only reads sound while you share and stops when the share ends |
 | `src/ferret/squirrel.ts` | Windows installer events (replaces electron-squirrel-startup): updates only refresh the Start menu shortcut, so a deleted desktop shortcut stays deleted |
 | `src/ferret/permissions.ts` | Permission requests: Ferret's own page keeps everything it uses (mic, camera, screen share, notifications...); embedded players (YouTube, Spotify...) may only go fullscreen and copy, and nothing may open other programs except web and mail links |
 | `src/ferret/hotkeys.ts` | Push-to-talk (global input hook via `uiohook-napi`, only running while push-to-talk is on; it only reacts to the one bound key/button) and global mute / deafen shortcuts |
@@ -44,7 +45,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | File | Change |
 | --- | --- |
 | `src/main.ts` | Register/serve the bundled web client; Ferret updater instead of `update-electron-app`; own AppUserModelID; navigation guard compares protocol + host (`origin` is `"null"` for custom schemes); dev runs don't claim `ferret://` links; **quit fix:** re-quit on a fresh task (on Windows the second `app.quit()` was ignored, leaving the app running without a window, which also broke "Restart now" for updates); Ferret's own installer events; in-app links asking for a new window (middle-click) open inside Ferret |
-| `src/native/window.ts` | Load `ferret-app://app/` instead of `https://stoat.chat/app` (`--force-server` still works); `backgroundThrottling: false` so timers keep running in the tray; `quitApp` copes with an already-closed window; audio autoplay allowed (late joiners were silent, stoatchat/for-web#1743); zoom keys go through Ferret's remembered zoom setting (10% steps) |
+| `src/native/window.ts` | Load `ferret-app://app/` instead of `https://stoat.chat/app` (`--force-server` still works); `backgroundThrottling: false` so timers keep running in the tray; `quitApp` copes with an already-closed window; audio autoplay allowed (late joiners were silent, stoatchat/for-web#1743); zoom keys go through Ferret's remembered zoom setting (10% steps); screen share picker starts Ferret's audio helper for "only this app" / "everything except Ferret" |
 | `src/native/config.ts` | Discord RPC defaults to off; settings from the page are only accepted from the Ferret page and only for the known on/off options |
 | `src/config.d.ts` | Adds the missing `startMinimisedToTray` setting to the type |
 | `src/native/discordRpc.ts` | Ferret branding once `FERRET.discordAppId` is set (Stoat's app until then) |
@@ -90,6 +91,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `QuickSwitcher.tsx` | Ctrl+K quick switcher for DMs, groups, channels and servers (stoatchat/for-desktop#61) |
 | `PersonSoundPickers.tsx`, `ProfileSounds.tsx` | Per-person private nickname, sound pickers, "Mute their soundboard" and their soundboard volume, also on each person's profile |
 | `LinkPreviews.tsx` | Discord-style cards for links without a Stoat preview (waits for Stoat's own first; `<link>`, code and spoilers are skipped) |
+| `voice/shareAudio.ts` | Plays the audio helper's sound into a track that's added to the screen share as its sound |
 | `nicknames.ts` | Private nicknames: your name for someone replaces theirs everywhere in Ferret (not masquerades or webhooks); nothing is sent to Stoat |
 | `Navigation.tsx` | Follows the desktop app's navigation requests (`ferret://` links and middle-clicked in-app links); the page never asked for them, so those links only brought the window forward |
 | `stopSounds.ts`, `StopSoundsButton.tsx` | Tracks playing Ferret sounds: long custom alerts stop after 5 s, previews after a while, and a "Stop sound" button appears while a longer sound plays |
@@ -109,6 +111,7 @@ settings, so pulling upstream changes doesn't conflict.
 | --- | --- |
 | `components/client/Controller.ts` | **Presence fix:** reconnect when the network comes back (nothing ever left the `Offline` state before), resync on wake/visibility, cap the reconnect back-off at 30s (was unbounded); honest session name; resyncs are logged for diagnostics |
 | `components/rtc/state.tsx` | Voice: show LiveKit's reconnecting state, auto-rejoin after unexpected drops, follow preferred devices; the mic processor isn't attached to the soundboard track |
+| `components/modal/modals/ScreenSharePicker.tsx` | Sound choices (No sound / All sound / Only this app / All except Ferret) instead of a Share audio checkbox, when the PC supports them |
 | `components/ui/components/features/voice/callCard/VoiceCallCardPiP.tsx` | One avatar per person in the small call card, not one per mic track (the soundboard track made people show twice) |
 | `components/rtc/components/RoomAudioManager.tsx` | Other people's `ferret-soundboard` tracks follow your soundboard volume / off switch / per-person mute |
 | `components/rtc/VoiceProcessor.ts` | Routes the mic through Ferret's mic stage (desktop app only) |

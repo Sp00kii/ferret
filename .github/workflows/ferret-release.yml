@@ -58,6 +58,10 @@ jobs:
       - name: Type check
         run: node scripts/check-types.mjs
 
+      # per-app screen share sound (native/audio-capture), shipped as resources/native
+      - name: Build audio helper
+        run: node scripts/build-audio-helper.mjs
+
       - name: Build installer
         run: pnpm exec electron-forge make --platform win32 --arch x64 --targets @electron-forge/maker-squirrel
 

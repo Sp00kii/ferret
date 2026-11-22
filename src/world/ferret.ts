@@ -57,6 +57,20 @@ contextBridge.exposeInMainWorld("ferret", {
   whatsNewSeen: () => ipcRenderer.invoke("ferret:whatsNewSeen"),
   linkPreview: (url: string) => ipcRenderer.invoke("ferret:linkPreview", url),
 
+  // screen share sound captured by Ferret's helper (Windows 11)
+  shareAudio: {
+    modes: () => ipcRenderer.invoke("ferret:shareAudioModes"),
+    setMode: (mode: string) =>
+      ipcRenderer.invoke("ferret:setShareAudioMode", mode),
+    stop: () => ipcRenderer.send("ferret:stopShareAudio"),
+    onStart: (callback: Listener<void>) =>
+      subscribe("ferret:shareAudio:start", callback),
+    onData: (callback: Listener<Uint8Array>) =>
+      subscribe("ferret:shareAudio:data", callback),
+    onEnd: (callback: Listener<void>) =>
+      subscribe("ferret:shareAudio:end", callback),
+  },
+
   // voice: push-to-talk and global mute / deafen hotkeys
   capturePttBinding: () => ipcRenderer.invoke("ferret:capturePttBinding"),
   hotkeyStatus: () => ipcRenderer.invoke("ferret:hotkeyStatus"),

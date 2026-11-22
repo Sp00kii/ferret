@@ -132,7 +132,14 @@ const config: ForgeConfig = {
         : `${ASSET_DIR}/icon`,
     // Ferret mod: ship the bundled web client as resources/web
     // Ferret mod: + alternative app icons as .ico for the taskbar button
-    extraResource: ["build/web", "assets/desktop/alt"],
+    extraResource: [
+      "build/web",
+      "assets/desktop/alt",
+      // Ferret mod: Windows audio helper for screen share sound
+      ...(process.platform === "win32" && fs.existsSync("build/native")
+        ? ["build/native"]
+        : []),
+    ],
   },
   rebuildConfig: {},
   makers,
