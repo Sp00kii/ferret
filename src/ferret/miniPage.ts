@@ -7,7 +7,7 @@ export const MINI_PAGE = `<!doctype html>
 <html><head><meta charset="utf-8"><title>Ferret call</title>
 <style>
   :root { --bg: #101426; --panel: #181d33; --line: #262c47; --text: #ffe4c7;
-    --dim: #b9a48f; --accent: #f07835; --danger: #e5484d; --speak: #3ecf8e; }
+    --dim: #b9a48f; --accent: #f07835; --on-accent: #101426; --danger: #e5484d; --speak: #3ecf8e; }
   * { box-sizing: border-box; margin: 0; }
   html, body { background: transparent; color: var(--text); overflow: hidden;
     font: 13px/1.3 "Inter", "Segoe UI", system-ui, sans-serif; user-select: none; }
@@ -36,7 +36,7 @@ export const MINI_PAGE = `<!doctype html>
   footer button { flex: 1; height: 30px; border: 0; border-radius: 8px; cursor: pointer;
     background: var(--panel); color: var(--text); font: inherit; font-weight: 600; }
   footer button:hover { background: var(--line); }
-  footer button.on { background: var(--accent); color: var(--bg); }
+  footer button.on { background: var(--accent); color: var(--on-accent); }
   footer button.end { background: var(--danger); color: #fff; flex: 0 0 44px; }
 </style></head>
 <body><div class="card" id="card">
@@ -59,6 +59,20 @@ export const MINI_PAGE = `<!doctype html>
   const MAX = 8;
   let startedAt = 0;
 
+  function applyLook(look) {
+    if (!look || typeof look !== "object") return;
+    const vars = { bg: "--bg", panel: "--panel", line: "--line", text: "--text",
+      dim: "--dim", accent: "--accent", onAccent: "--on-accent" };
+    const hex = /^#[0-9a-f]{6}$/i;
+    for (const key in vars) {
+      const value = look[key];
+      if (typeof value === "string" && hex.test(value))
+        document.documentElement.style.setProperty(vars[key], value);
+    }
+    if (typeof look.accent === "string" && hex.test(look.accent))
+      document.documentElement.style.setProperty("--accent-dim", look.accent + "33");
+  }
+
   for (const [id, cmd] of [["mute","toggleMute"],["deafen","toggleDeafen"],["end","disconnect"],
       ["close","close"],["open","focus"],["open2","focus"]]) {
     $(id).addEventListener("click", () => mini.command(cmd));
@@ -74,6 +88,7 @@ export const MINI_PAGE = `<!doctype html>
 
   function render(state) {
     if (!state || !state.inCall) return;
+    applyLook(state.look);
     startedAt = Number(state.startedAt) || 0;
     $("channel").textContent = state.channelName || "Voice";
     const where = state.serverName ? state.serverName + " \\u00b7 " : "";

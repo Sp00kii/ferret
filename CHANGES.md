@@ -12,7 +12,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | --- | --- |
 | `src/ferret/constants.ts` | Names, IDs, schemes and the unofficial notice |
 | `src/ferret/webApp.ts` | Serves the bundled web client from `ferret-app://app` (SPA routing, custom ringtone / sound / soundboard files) |
-| `src/ferret/settings.ts` | Ferret settings store (`ferret-settings.json`): ringtone choice (Dook Ring by default; removed presets fall back to it), custom ringtone file, Ferret style switch, notification pop-ups switch, per-sound choices + custom sound files, voice settings (push-to-talk, noise gate, shortcuts, soundboard volume, compact call window), per-person ringtone / message sound (custom files in `people/`), your own soundboard clips (copied to `%AppData%\Ferret\soundboard`, up to 24) |
+| `src/ferret/settings.ts` | Ferret settings store (`ferret-settings.json`): ringtone choice (Dook Ring by default; removed presets fall back to it), custom ringtone file, Ferret style switch + theme + accent colour, notification pop-ups switch, per-sound choices + custom sound files, voice settings (push-to-talk, noise gate, shortcuts, soundboard volume, compact call window), per-person ringtone / message sound (custom files in `people/`), your own soundboard clips (copied to `%AppData%\Ferret\soundboard`, up to 24) |
 | `src/ferret/devData.ts` | `pnpm start` uses its own `%AppData%\Ferret Dev` folder so a dev run never closes or changes the installed Ferret |
 | `src/ferret/incomingCall.ts` | Windows notification + taskbar flash for incoming calls; click opens the call |
 | `src/ferret/resync.ts` | Tells the page to resync on wake from sleep / screen unlock |
@@ -74,7 +74,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `people.ts`, `PeopleSounds.tsx` | Per-person ringtone and message sound, set from the Ferret settings page or a user's right-click menu |
 | `gifs/FavouriteStar.tsx`, `gifs/categories.ts` | Favourite star on every GIF in the picker; hides Gifbox categories named after random GIF ids ("OcIOBa") and adds real ones |
 | `presence.ts` | Re-checks who is online when a server's member list is opened or the window regains focus (throttled to once per 30s per server) |
-| `theme/ferretTheme.ts`, `theme/ferret-style.css` | The Ferret style: navy/copper palette and tighter corners from the Ferret design system, applied only while the "Ferret style" switch is on |
+| `theme/looks.ts`, `theme/ferretTheme.ts`, `theme/ferret-style.css`, `theme/LookPicker.tsx` | The Ferret style: Midnight (navy), Cream (light) and High contrast themes, five accent colours (copper, blue, purple, pink, green) and tighter corners from the Ferret design system, applied only while the "Ferret style" switch is on. The call window and pop-ups follow the same colours |
 | `Branding.tsx`, `assets/ferret-logo.png` | Ferret logo + name for the titlebar, home page and login screen |
 | `soundLibrary.ts` + `sounds/library/*.ogg` | Pickable sounds for any event (Clicker, Pop, Bell, Blip, Squeak, Boop, Dook) and which file to play per event |
 | `sounds.ts` + `sounds/*.ogg` | Ferret's own synthesised sound pack (message chime, mute/deafen, voice join/leave, stream, ringtones). The open-source fallback sounds are silent placeholders, plus a click for messages |
@@ -93,7 +93,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `components/client/Sounds.tsx` | Plays Ferret's sounds (or the user's per-sound / per-person choice) instead of the silent fallback sounds |
 | `components/client/NotificationsWorker.tsx` | Passes the message author to the sound player (per-person message sounds); uses Ferret's pop-up when it's switched on |
 | `components/app/menus/UserContextMenu.tsx` | "Ferret sounds…" entry (desktop app only) |
-| `components/ui/themes/LoadTheme.tsx` | Applies the Ferret style on top of the stock theme; removes stale variables when switching back |
+| `components/ui/themes/LoadTheme.tsx` | Applies the Ferret style (chosen theme + accent) on top of the stock theme; removes stale variables when switching back |
 | `components/app/interface/desktop/Titlebar.tsx`, `src/interface/Home.tsx`, `components/auth/src/AuthPage.tsx` | Ferret logo instead of the placeholder wordmark |
 | `components/ui/components/design/CategoryButton.tsx` | **Bug fix:** opening a long dropdown (e.g. microphone picker) scrolled the whole settings page and pushed the dropdown off screen; now only the list scrolls |
 | `src/index.tsx` | Mounts the incoming call controller, the voice extras and the diagnostics recorder |

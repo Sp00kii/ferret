@@ -18,6 +18,7 @@ type Toast = {
   channelId: string;
   messageId?: string;
   canReply: boolean;
+  look?: Record<string, string>;
 };
 
 const WIDTH = 368;
@@ -30,6 +31,26 @@ let height = 0;
 
 const clip = (value: unknown, max: number) =>
   typeof value === "string" ? value.slice(0, max) : "";
+
+/** Pop-up colours from the page: known keys, #rrggbb values only */
+function sanitizeLook(input: unknown) {
+  if (!input || typeof input !== "object") return undefined;
+  const look: Record<string, string> = {};
+  for (const key of [
+    "bg",
+    "panel",
+    "line",
+    "text",
+    "dim",
+    "accent",
+    "onAccent",
+  ]) {
+    const value = (input as Record<string, unknown>)[key];
+    if (typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value))
+      look[key] = value;
+  }
+  return look;
+}
 
 function sanitize(input: unknown): Toast | undefined {
   if (!input || typeof input !== "object") return;
@@ -46,6 +67,7 @@ function sanitize(input: unknown): Toast | undefined {
     channelId: clip(t.channelId, 64),
     messageId: clip(t.messageId, 64) || undefined,
     canReply: t.canReply === true,
+    look: sanitizeLook(t.look),
   };
   return toast.id && toast.channelId ? toast : undefined;
 }

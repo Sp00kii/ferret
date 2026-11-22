@@ -7,7 +7,7 @@ export const TOAST_PAGE = `<!doctype html>
 <html><head><meta charset="utf-8"><title>Ferret notifications</title>
 <style>
   :root { --bg: #101426; --panel: #181d33; --line: #2a3150; --text: #ffe4c7;
-    --dim: #b9a48f; --accent: #f07835; --accent-dim: #f0783533; --danger: #ff6b6b; --ok: #3ecf8e; }
+    --dim: #b9a48f; --accent: #f07835; --on-accent: #101426; --accent-dim: #f0783533; --danger: #ff6b6b; --ok: #3ecf8e; }
   * { box-sizing: border-box; margin: 0; }
   html, body { background: transparent; color: var(--text); overflow: hidden;
     font: 13px/1.35 "Inter", "Segoe UI", system-ui, sans-serif; }
@@ -26,7 +26,7 @@ export const TOAST_PAGE = `<!doctype html>
   .top { display: flex; align-items: baseline; gap: 6px; padding-right: 20px; }
   .title { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sub { color: var(--dim); font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .body { margin-top: 2px; color: #f3dcc3; word-wrap: break-word; display: -webkit-box;
+  .body { margin-top: 2px; color: var(--text); opacity: .92; word-wrap: break-word; display: -webkit-box;
     -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line; }
   .x { position: absolute; top: 8px; right: 8px; border: 0; background: none; color: var(--dim);
     width: 22px; height: 22px; border-radius: 6px; cursor: pointer; font-size: 14px; }
@@ -35,7 +35,7 @@ export const TOAST_PAGE = `<!doctype html>
   .actions button, .send { border: 0; border-radius: 8px; height: 28px; padding: 0 12px; cursor: pointer;
     font: inherit; font-weight: 600; background: var(--panel); color: var(--text); }
   .actions button:hover { background: var(--line); }
-  .actions .primary, .send { background: var(--accent); color: var(--bg); }
+  .actions .primary, .send { background: var(--accent); color: var(--on-accent); }
   .actions .primary:hover, .send:hover { filter: brightness(1.08); }
   .reply { display: flex; gap: 6px; margin-top: 8px; }
   .reply input { flex: 1; min-width: 0; height: 30px; border-radius: 8px; border: 1px solid var(--line);
@@ -51,6 +51,20 @@ export const TOAST_PAGE = `<!doctype html>
   const stack = document.getElementById("stack");
   const MAX = 3, LIFETIME = 8000;
   const toasts = new Map();
+
+  function applyLook(look) {
+    if (!look || typeof look !== "object") return;
+    const vars = { bg: "--bg", panel: "--panel", line: "--line", text: "--text",
+      dim: "--dim", accent: "--accent", onAccent: "--on-accent" };
+    const hex = /^#[0-9a-f]{6}$/i;
+    for (const key in vars) {
+      const value = look[key];
+      if (typeof value === "string" && hex.test(value))
+        document.documentElement.style.setProperty(vars[key], value);
+    }
+    if (typeof look.accent === "string" && hex.test(look.accent))
+      document.documentElement.style.setProperty("--accent-dim", look.accent + "33");
+  }
 
   const el = (tag, cls, text) => {
     const node = document.createElement(tag);
@@ -117,6 +131,7 @@ export const TOAST_PAGE = `<!doctype html>
 
   function add(data) {
     if (toasts.has(data.id)) return;
+    applyLook(data.look);
     while (toasts.size >= MAX) {
       const oldest = [...toasts.values()].find((t) => !t.hold) || toasts.values().next().value;
       remove(oldest.data.id);

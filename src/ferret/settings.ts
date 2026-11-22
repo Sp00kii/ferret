@@ -24,6 +24,9 @@ export type FerretSettings = {
   /** Server voice channel ids that should ring when a call starts */
   watchedVoiceChannels: string[];
   showConnectionQuality: boolean;
+  /** Theme and accent colour used while ferretStyle is on */
+  ferretTheme: (typeof THEMES)[number];
+  ferretAccent: (typeof ACCENTS)[number];
   /** Ferret's own pop-ups (with a reply box) instead of Windows notifications */
   notificationPopups: boolean;
   /** Ferret's look (navy/copper); off = stock Stoat theming */
@@ -36,6 +39,10 @@ export type FerretSettings = {
   /** Per-person ringtone / message sound, keyed by user id */
   people: Record<string, PersonSounds>;
 };
+
+// keep in sync with the web client's theme/looks.ts
+const THEMES = ["midnight", "cream", "contrast"] as const;
+const ACCENTS = ["copper", "blue", "purple", "pink", "green"] as const;
 
 export const PERSON_SOUND_KINDS = ["ringtone", "message"] as const;
 export type PersonSoundKind = (typeof PERSON_SOUND_KINDS)[number];
@@ -158,6 +165,8 @@ const DEFAULTS: FerretSettings = {
   showConnectionQuality: true,
   ferretStyle: true,
   notificationPopups: true,
+  ferretTheme: "midnight",
+  ferretAccent: "copper",
   sounds: {},
   voice: DEFAULT_VOICE,
   soundboard: [],
@@ -255,6 +264,11 @@ function applyPatch(patch: unknown): FerretSettings {
 
   if (typeof input.ferretStyle === "boolean")
     next.ferretStyle = input.ferretStyle;
+
+  if (THEMES.includes(input.ferretTheme as never))
+    next.ferretTheme = input.ferretTheme!;
+  if (ACCENTS.includes(input.ferretAccent as never))
+    next.ferretAccent = input.ferretAccent!;
 
   if (typeof input.notificationPopups === "boolean")
     next.notificationPopups = input.notificationPopups;
