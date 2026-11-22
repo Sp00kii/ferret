@@ -27,6 +27,10 @@ export type FerretSettings = {
   /** Theme and accent colour used while ferretStyle is on */
   ferretTheme: (typeof THEMES)[number];
   ferretAccent: (typeof ACCENTS)[number];
+  /** Last version whose "What's new" was shown (null = fresh install) */
+  lastSeenVersion: string | null;
+  /** Alternative app icon id (see appIcon.ts) */
+  appIcon: string;
   /** Ferret's own pop-ups (with a reply box) instead of Windows notifications */
   notificationPopups: boolean;
   /** Ferret's look (navy/copper); off = stock Stoat theming */
@@ -43,6 +47,19 @@ export type FerretSettings = {
 // keep in sync with the web client's theme/looks.ts
 const THEMES = ["midnight", "cream", "contrast"] as const;
 const ACCENTS = ["copper", "blue", "purple", "pink", "green"] as const;
+// keep in sync with appIcon.ts (not imported: that pulls in the tray)
+const APP_ICON_IDS = [
+  "classic",
+  "cream",
+  "black",
+  "chocolate",
+  "blue",
+  "purple",
+  "pink",
+  "green",
+  "albino",
+  "silver",
+];
 
 export const PERSON_SOUND_KINDS = ["ringtone", "message"] as const;
 export type PersonSoundKind = (typeof PERSON_SOUND_KINDS)[number];
@@ -165,6 +182,8 @@ const DEFAULTS: FerretSettings = {
   showConnectionQuality: true,
   ferretStyle: true,
   notificationPopups: true,
+  appIcon: "classic",
+  lastSeenVersion: null,
   ferretTheme: "midnight",
   ferretAccent: "copper",
   sounds: {},
@@ -175,6 +194,11 @@ const DEFAULTS: FerretSettings = {
 
 const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
 const AUDIO_EXTENSIONS = ["mp3", "ogg", "wav", "m4a", "aac", "flac", "webm"];
+
+// before the store creates the file: did Ferret run here before?
+const existingInstall = existsSync(
+  path.join(app.getPath("userData"), "ferret-settings.json"),
+);
 
 // electron-store's typings don't resolve under this TS setup, same as native/config.ts
 const store = new Store({
@@ -269,6 +293,9 @@ function applyPatch(patch: unknown): FerretSettings {
     next.ferretTheme = input.ferretTheme!;
   if (ACCENTS.includes(input.ferretAccent as never))
     next.ferretAccent = input.ferretAccent!;
+
+  if (typeof input.appIcon === "string" && APP_ICON_IDS.includes(input.appIcon))
+    next.appIcon = input.appIcon;
 
   if (typeof input.notificationPopups === "boolean")
     next.notificationPopups = input.notificationPopups;
@@ -590,7 +617,36 @@ function clearRingtone(): FerretSettings {
   });
 }
 
+/**
+ * Should the page show "What's new"? Only after an update: a fresh install
+ * just records the version. (Versions before 1.0.5 didn't record it, so an
+ * existing settings file without it counts as an update.)
+ */
+function whatsNew() {
+  const current = getSettings();
+  const version = app.getVersion();
+  if (current.lastSeenVersion === null && !existingInstall) {
+    save({ ...current, lastSeenVersion: version });
+    return { show: false, version };
+  }
+  return { show: current.lastSeenVersion !== version, version };
+}
+
+function whatsNewSeen() {
+  const current = getSettings();
+  const version = app.getVersion();
+  if (current.lastSeenVersion !== version)
+    save({ ...current, lastSeenVersion: version });
+  return true;
+}
+
 export function initSettingsIpc() {
+  ipcMain.handle("ferret:whatsNew", (event) =>
+    isFromApp(event) ? whatsNew() : null,
+  );
+  ipcMain.handle("ferret:whatsNewSeen", (event) =>
+    isFromApp(event) ? whatsNewSeen() : null,
+  );
   ipcMain.handle("ferret:getSettings", (event) =>
     isFromApp(event) ? getSettings() : null,
   );

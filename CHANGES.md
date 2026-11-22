@@ -12,7 +12,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | --- | --- |
 | `src/ferret/constants.ts` | Names, IDs, schemes and the unofficial notice |
 | `src/ferret/webApp.ts` | Serves the bundled web client from `ferret-app://app` (SPA routing, custom ringtone / sound / soundboard files) |
-| `src/ferret/settings.ts` | Ferret settings store (`ferret-settings.json`): ringtone choice (Dook Ring by default; removed presets fall back to it), custom ringtone file, Ferret style switch + theme + accent colour, notification pop-ups switch, per-sound choices + custom sound files, voice settings (push-to-talk, noise gate, shortcuts, soundboard volume, compact call window), per-person ringtone / message sound (custom files in `people/`), your own soundboard clips (copied to `%AppData%\Ferret\soundboard`, up to 24) |
+| `src/ferret/settings.ts` | Ferret settings store (`ferret-settings.json`): ringtone choice (Dook Ring by default; removed presets fall back to it), custom ringtone file, Ferret style switch + theme + accent colour, app icon, last version whose "What's new" was seen, notification pop-ups switch, per-sound choices + custom sound files, voice settings (push-to-talk, noise gate, shortcuts, soundboard volume, compact call window), per-person ringtone / message sound (custom files in `people/`), your own soundboard clips (copied to `%AppData%\Ferret\soundboard`, up to 24) |
 | `src/ferret/devData.ts` | `pnpm start` uses its own `%AppData%\Ferret Dev` folder so a dev run never closes or changes the installed Ferret |
 | `src/ferret/incomingCall.ts` | Windows notification + taskbar flash for incoming calls; click opens the call |
 | `src/ferret/resync.ts` | Tells the page to resync on wake from sleep / screen unlock |
@@ -21,6 +21,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | `src/ferret/hotkeys.ts` | Push-to-talk (global input hook via `uiohook-napi`, only running while push-to-talk is on; it only reacts to the one bound key/button) and global mute / deafen shortcuts |
 | `src/ferret/diagnostics.ts` | App facts for the diagnostics panel (versions, OS, uptime; no paths or account info) |
 | `src/ferret/toasts.ts`, `src/ferret/toastPage.ts` | Ferret notification pop-ups in the corner with Reply / Open (can be switched back to Windows notifications) |
+| `src/ferret/appIcon.ts`, `assets/desktop/alt/*` | Alternative app icons (recoloured mascot, incl. albino and silver ferrets) for the window and tray |
 | `src/ferret/miniCall.ts`, `src/ferret/miniPage.ts` | Compact always-on-top call window shown while in a call and Ferret isn't focused (can be turned off, or closed per call) |
 | `src/ferret/index.ts` | Wires the above into the main process |
 | `src/world/ferret.ts` | Preload bridge exposing `window.ferret` to the page |
@@ -39,7 +40,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | `src/native/config.ts` | Discord RPC defaults to off |
 | `src/native/deepLink.ts` | `ferret://` links instead of `stoat://` |
 | `src/native/autoLaunch.ts` | Ferret name |
-| `src/native/tray.ts` | Ferret name; never touches a destroyed window (was "Object has been destroyed" on Quit) |
+| `src/native/tray.ts` | Ferret name; never touches a destroyed window (was "Object has been destroyed" on Quit); uses the chosen app icon |
 | `src/preload.ts` | Loads the Ferret bridge |
 | `forge.config.ts` | Ferret name/executable/installer, icon URL, bundles `build/web`, fails early if it's missing, publisher repo; copies the `uiohook-napi` Windows prebuild into the package |
 | `vite.main.config.ts` | `uiohook-napi` stays external (native module) |
@@ -71,6 +72,8 @@ settings, so pulling upstream changes doesn't conflict.
 | `voice/VoiceExtrasSettings.tsx` | Settings for the above |
 | `diagnostics/*` | Hidden diagnostics panel (tap the logo on the Ferret settings page 5 times): connection log, websocket event types, "Copy logs". Never records message content, names or ids |
 | `notifications/toasts.tsx` | Sends new-message notifications to the pop-ups; sends replies typed there as a normal reply |
+| `theme/IconPicker.tsx`, `public/ferret/icons/` | App icon picker |
+| `whatsNew/*` | "What's new in Ferret" pop-up, shown once after an update (and from About) |
 | `people.ts`, `PeopleSounds.tsx` | Per-person ringtone and message sound, set from the Ferret settings page or a user's right-click menu |
 | `gifs/FavouriteStar.tsx`, `gifs/categories.ts` | Favourite star on every GIF in the picker; hides Gifbox categories named after random GIF ids ("OcIOBa") and adds real ones |
 | `presence.ts` | Re-checks who is online when a server's member list is opened or the window regains focus (throttled to once per 30s per server) |
@@ -94,9 +97,9 @@ settings, so pulling upstream changes doesn't conflict.
 | `components/client/NotificationsWorker.tsx` | Passes the message author to the sound player (per-person message sounds); uses Ferret's pop-up when it's switched on |
 | `components/app/menus/UserContextMenu.tsx` | "Ferret sounds…" entry (desktop app only) |
 | `components/ui/themes/LoadTheme.tsx` | Applies the Ferret style (chosen theme + accent) on top of the stock theme; removes stale variables when switching back |
-| `components/app/interface/desktop/Titlebar.tsx`, `src/interface/Home.tsx`, `components/auth/src/AuthPage.tsx` | Ferret logo instead of the placeholder wordmark |
+| `components/app/interface/desktop/Titlebar.tsx`, `src/interface/Home.tsx`, `components/auth/src/AuthPage.tsx` | Ferret logo instead of the placeholder wordmark (`Branding.tsx` text colour follows its surroundings) |
 | `components/ui/components/design/CategoryButton.tsx` | **Bug fix:** opening a long dropdown (e.g. microphone picker) scrolled the whole settings page and pushed the dropdown off screen; now only the list scrolls |
-| `src/index.tsx` | Mounts the incoming call controller, the voice extras and the diagnostics recorder |
+| `src/index.tsx` | Mounts the incoming call controller, voice extras, diagnostics recorder, pop-up actions and "What's new" |
 | `components/ui/.../picker/GifPicker.tsx` | Favourite star on GIFs; cleaned-up categories |
 | `components/auth/src/AuthPage.tsx`, `AppUpsell.tsx` | Login panel colours can follow the Ferret style (navy + copper) |
 | `src/interface/channels/text/MemberSidebar.tsx` | Refreshes member presence when shown |

@@ -3,6 +3,9 @@ import { Menu, Tray, nativeImage } from "electron";
 import trayIconAsset from "../../assets/desktop/icon.png?asset";
 import macOsTrayIconAsset from "../../assets/desktop/iconTemplate.png?asset";
 import { version } from "../../package.json";
+import { currentAppIcon } from "../ferret/appIcon";
+
+// Ferret mod
 
 import { createMainWindow, mainWindow, quitApp } from "./window";
 
@@ -21,8 +24,15 @@ function createTrayIcon() {
   }
 }
 
+// Ferret mod: the chosen alternative icon (see ferret/appIcon.ts)
+export function setTrayImage(image: Electron.NativeImage) {
+  if (process.platform !== "darwin" && tray && !tray.isDestroyed())
+    tray.setImage(image);
+}
+
 export function initTray() {
-  const trayIcon = createTrayIcon();
+  const trayIcon =
+    process.platform === "darwin" ? createTrayIcon() : currentAppIcon(); // Ferret mod
   tray = new Tray(trayIcon);
   updateTrayMenu();
   tray.setToolTip("Ferret"); // Ferret mod

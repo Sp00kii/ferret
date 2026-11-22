@@ -1,5 +1,6 @@
 import { app } from "electron";
 
+import { initAppIcon } from "./appIcon";
 import { FERRET } from "./constants";
 // must be evaluated before settings/config stores open the data folder
 import { isDevBuild } from "./devData";
@@ -42,4 +43,5 @@ export function initFerret() {
   initMiniCall();
   initDiagnostics();
   initToasts();
+  initAppIcon();
 }
