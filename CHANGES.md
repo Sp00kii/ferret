@@ -12,7 +12,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | --- | --- |
 | `src/ferret/constants.ts` | Names, IDs, schemes and the unofficial notice |
 | `src/ferret/webApp.ts` | Serves the bundled web client from `ferret-app://app` (SPA routing, custom ringtone file) |
-| `src/ferret/settings.ts` | Ferret settings store (`ferret-settings.json`): ringtone choice (Franklin by default), custom ringtone file, Ferret style switch, per-sound choices + custom sound files |
+| `src/ferret/settings.ts` | Ferret settings store (`ferret-settings.json`): ringtone choice (Dook Ring by default; removed copyrighted presets fall back to it), custom ringtone file, Ferret style switch, per-sound choices + custom sound files |
 | `src/ferret/devData.ts` | `pnpm start` uses its own `%AppData%\Ferret Dev` folder so a dev run never closes or changes the installed Ferret |
 | `src/ferret/incomingCall.ts` | Windows notification + taskbar flash for incoming calls; click opens the call |
 | `src/ferret/resync.ts` | Tells the page to resync on wake from sleep / screen unlock |
@@ -53,7 +53,7 @@ settings, so pulling upstream changes doesn't conflict.
 | --- | --- |
 | `bridge.ts` | Types for `window.ferret` |
 | `settings.ts` | Shared reactive copy of the Ferret settings |
-| `ringtones.ts` + `public/ferret/ringtones/` | Built-in ringtone choices (Franklin is the default) |
+| `ringtones.ts` + `public/ferret/ringtones/` | Built-in ringtone choices: Ferret originals (Dook Ring by default, Arcade, Marimba Bounce, Retro Phone, Synthwave, Ferret Chime) |
 | `IncomingCalls.tsx` | Detects calls starting, loops the ringtone, shows the call card and the Windows notification |
 | `FerretSettings.tsx` | The "Ferret" settings page |
 | `voice/devices.ts` | Follows the preferred mic/output across unplug and replug |

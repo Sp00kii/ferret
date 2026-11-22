@@ -59,7 +59,10 @@ const isSoundSlot = (value: unknown): value is SoundSlot =>
   typeof value === "string" &&
   (SOUND_SLOTS as readonly string[]).includes(value);
 
-const DEFAULT_PRESET = "franklin";
+const DEFAULT_PRESET = "dook-ring";
+
+/** Ringtones removed from Ferret (copyright); people on them move to the default */
+const REMOVED_PRESETS = new Set(["franklin", "discord-halloween", "omori"]);
 
 const DEFAULTS: FerretSettings = {
   ringtone: {
@@ -91,6 +94,7 @@ export function getSettings(): FerretSettings {
   // settings from before presets existed: keep someone's own sound selected
   if (!saved.ringtone?.preset && ringtone.customFile)
     ringtone.preset = "custom";
+  if (REMOVED_PRESETS.has(ringtone.preset)) ringtone.preset = DEFAULT_PRESET;
   return { ...DEFAULTS, ...saved, ringtone };
 }
 

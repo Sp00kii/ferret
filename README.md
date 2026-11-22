@@ -16,7 +16,7 @@ Same accounts, same servers, same people: it talks to the official Stoat servers
 ## What Ferret adds
 
 - **Live presence that stays live.** Online / idle / offline status updates in real time, and everything resyncs right after your PC wakes from sleep, gets unlocked, or your network drops and comes back. (Fixes the cases where the official client got stuck "offline" until you pressed F5.)
-- **Incoming call ringtone.** A looping ringtone plus a Windows notification when someone starts a call in a DM or group, or in a server voice channel you chose to watch. Stops when you join, decline, or the call ends, and gives up after 30 seconds. Clicking the notification opens that call.
+- **Incoming call ringtone.** Pick from original Ferret ringtones (or your own file): a looping ringtone plus a Windows notification when someone starts a call in a DM or group, or in a server voice channel you chose to watch. Stops when you join, decline, or the call ends, and gives up after 30 seconds. Clicking the notification opens that call.
 - **More reliable voice.**
   - Remembers your mic and speakers, and follows your headset when you unplug and replug it.
   - Automatically rejoins a call after a connection drop, with a visible "Reconnecting" state.
