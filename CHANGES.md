@@ -79,7 +79,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `voice/MicTest.tsx` | Mic test with live level meter |
 | `voice/micChain.ts` | Extra mic stage: push-to-talk + noise gate (with level meter) and the soundboard mix-in |
 | `voice/FerretVoice.tsx` | Connects push-to-talk, global shortcuts and the compact call window to the call |
-| `voice/soundboard.ts`, `voice/SoundboardButton.tsx`, `sounds/board/*.ogg` | Soundboard in the call controls with Ferret-synthesised clips (rimshot, air horn, sad trombone, ta-da, …) plus your own uploaded sounds (played in full), 2.5 s cooldown, Stop button, live volume sliders for your clips and other people's; clips go out on their own `ferret-soundboard` audio track next to your mic (only while your mic is on; otherwise mixed into the mic as before), so everyone still hears them and Ferret users can turn them down or mute them per person; the panel is drawn at page level above the button, because the call bar cuts off anything sticking out of it |
+| `voice/soundboard.ts`, `voice/SoundboardButton.tsx`, `sounds/board/*.ogg` | Soundboard in the call controls with Ferret-synthesised clips (rimshot, air horn, sad trombone, ta-da, …) plus your own uploaded sounds (played in full), 2.5 s cooldown, Stop button, live volume sliders for your clips and other people's; clips go out on their own `ferret-soundboard` audio track next to your mic (only while your mic is on, removed when you mute; otherwise mixed into the mic as before), so everyone still hears them and Ferret users can turn them down or mute them per person; the panel is drawn at page level above the button, because the call bar cuts off anything sticking out of it |
 | `voice/VoiceExtrasSettings.tsx` | Settings for the above |
 | `diagnostics/*` | Hidden diagnostics panel (tap the logo on the Ferret settings page 5 times): connection log, websocket event types, "Copy logs". Never records message content, names or ids |
 | `notifications/toasts.tsx` | Sends new-message notifications to the pop-ups; sends replies typed there as a normal reply |
@@ -109,6 +109,7 @@ settings, so pulling upstream changes doesn't conflict.
 | --- | --- |
 | `components/client/Controller.ts` | **Presence fix:** reconnect when the network comes back (nothing ever left the `Offline` state before), resync on wake/visibility, cap the reconnect back-off at 30s (was unbounded); honest session name; resyncs are logged for diagnostics |
 | `components/rtc/state.tsx` | Voice: show LiveKit's reconnecting state, auto-rejoin after unexpected drops, follow preferred devices; the mic processor isn't attached to the soundboard track |
+| `components/ui/components/features/voice/callCard/VoiceCallCardPiP.tsx` | One avatar per person in the small call card, not one per mic track (the soundboard track made people show twice) |
 | `components/rtc/components/RoomAudioManager.tsx` | Other people's `ferret-soundboard` tracks follow your soundboard volume / off switch / per-person mute |
 | `components/rtc/VoiceProcessor.ts` | Routes the mic through Ferret's mic stage (desktop app only) |
 | `components/ui/.../voice/callCard/VoiceCallCardActions.tsx` | Soundboard button |
