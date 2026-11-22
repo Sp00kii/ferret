@@ -224,6 +224,8 @@ const config: ForgeConfig = {
       [FuseV1Options.EnableNodeCliInspectArguments]: false,
       [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
       [FuseV1Options.OnlyLoadAppFromAsar]: true,
+      // Ferret mod: no file:// pages are used, so they get no extra rights
+      [FuseV1Options.GrantFileProtocolExtraPrivileges]: false,
     }),
   ],
   publishers: [

@@ -13,6 +13,7 @@ import { initHotkeys } from "./hotkeys";
 import { initImageCors } from "./imageCors";
 import { initIncomingCallIpc } from "./incomingCall";
 import { initMiniCall } from "./miniCall";
+import { initPermissions } from "./permissions";
 import { initResync } from "./resync";
 import { initSettingsIpc } from "./settings";
 import { initToasts } from "./toasts";
@@ -40,6 +41,7 @@ export function ferretAppUserModelId() {
  * before the main window loads its page.
  */
 export function initFerret() {
+  initPermissions();
   serveWebApp();
   initSettingsIpc();
   initIncomingCallIpc();

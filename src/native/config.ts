@@ -3,8 +3,13 @@ import { type JSONSchema } from "json-schema-typed";
 import { ipcMain } from "electron";
 import Store from "electron-store";
 
+// Ferret mod: dev runs use their own data folder; must run before the store
+import "../ferret/devData";
+
 import { destroyDiscordRpc, initDiscordRpc } from "./discordRpc";
 import { mainWindow } from "./window";
+
+import { isFromApp } from "../ferret/trust"; // Ferret mod
 
 const schema = {
   firstLaunch: {
@@ -211,9 +216,23 @@ class Config {
 
 export const config = new Config();
 
-ipcMain.on("config", (_, newConfig: Partial<DesktopConfig>) => {
+// Ferret mod: only the app page may change these, and only the on/off
+// settings the settings page shows (any other key used to be written onto
+// the config object as-is, e.g. replacing its methods)
+const PAGE_SETTINGS = [
+  "minimiseToTray",
+  "startMinimisedToTray",
+  "customFrame",
+  "discordRpc",
+  "spellchecker",
+  "hardwareAcceleration",
+] as const;
+
+ipcMain.on("config", (event, newConfig: Partial<DesktopConfig>) => {
+  if (!isFromApp(event) || !newConfig || typeof newConfig !== "object") return;
   console.info("Received new configuration", newConfig);
-  Object.entries(newConfig).forEach(
-    ([key, value]) => (config[key as keyof DesktopConfig] = value as never),
-  );
+  for (const key of PAGE_SETTINGS) {
+    const value = newConfig[key];
+    if (typeof value === "boolean") config[key] = value;
+  }
 });

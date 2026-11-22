@@ -4,6 +4,10 @@
 #
 # Run it by hand (Actions -> Ferret Release -> Run workflow) to test the
 # builds: nothing is published then, the files are attached to the run.
+#
+# The build jobs can only read the repository. Only the last job, which
+# runs no project code at all, may create the release.
+# Actions are pinned to exact commits (the version is in the comment).
 name: Ferret Release
 
 on:
@@ -12,7 +16,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/v') }}
@@ -24,17 +28,18 @@ jobs:
 
     steps:
       - name: Checkout (with web + SDK submodules)
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: recursive
+          persist-credentials: false
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
         with:
           run_install: false
 
       - name: Install Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
 
@@ -64,46 +69,35 @@ jobs:
           cp ./*Setup.exe FerretSetup.exe
           ls -la
 
-      - name: Publish GitHub Release
-        if: env.IS_RELEASE == 'true'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release create "$GITHUB_REF_NAME" \
-            out/make/squirrel.windows/x64/* \
-            --title "Ferret $GITHUB_REF_NAME" \
-            --generate-notes
-
-      - name: Attach test build to the run
-        if: env.IS_RELEASE != 'true'
-        uses: actions/upload-artifact@v7
+      - name: Keep the Windows files
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ferret-windows
-          path: out/make/squirrel.windows/x64/FerretSetup.exe
+          path: out/make/squirrel.windows/x64/*
+          if-no-files-found: error
+          retention-days: 14
 
   linux:
     name: Linux (.deb + .tar.gz)
     runs-on: ubuntu-latest
-    # the release is created by the Windows job
-    needs: windows
 
     steps:
       - name: Checkout (with web + SDK submodules)
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: recursive
+          persist-credentials: false
 
       - name: Install packaging tools
         run: sudo apt-get update && sudo apt-get install -y fakeroot dpkg
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
         with:
           run_install: false
 
       - name: Install Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
 
@@ -127,15 +121,43 @@ jobs:
           tar -C out/Ferret-linux-x64 -czf dist/ferret-linux-x64.tar.gz .
           ls -la dist
 
-      - name: Add to the GitHub Release
-        if: env.IS_RELEASE == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release upload "$GITHUB_REF_NAME" dist/* --clobber
-
-      - name: Attach test build to the run
-        if: env.IS_RELEASE != 'true'
-        uses: actions/upload-artifact@v7
+      - name: Keep the Linux files
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ferret-linux
           path: dist/*
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+    needs: [windows, linux]
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+
+    steps:
+      - name: Get the Windows files
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: ferret-windows
+          path: release/windows
+
+      - name: Get the Linux files
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: ferret-linux
+          path: release/linux
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ls -la release/windows release/linux
+          gh release create "$GITHUB_REF_NAME" \
+            release/windows/* release/linux/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --verify-tag \
+            --title "Ferret $GITHUB_REF_NAME" \
+            --generate-notes

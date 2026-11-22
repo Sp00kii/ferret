@@ -7,6 +7,9 @@ import Store from "electron-store";
 
 import { mainWindow } from "../native/window";
 
+// must run before the store below opens the data folder: dev runs use
+// their own folder (imported here, as the import order elsewhere can change)
+import "./devData";
 import { isFromApp } from "./trust";
 
 export type FerretSettings = {

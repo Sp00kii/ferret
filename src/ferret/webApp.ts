@@ -64,6 +64,24 @@ const notBuiltPage = (root: string) =>
   );
 
 /**
+ * The pop-up pages only run their own inline script and show text plus
+ * https pictures (avatars). Even if a name or message ever slipped past the
+ * page's escaping, it couldn't load or run anything else.
+ */
+const POPUP_HEADERS = {
+  "content-type": "text/html; charset=utf-8",
+  "content-security-policy": [
+    "default-src 'none'",
+    "script-src 'unsafe-inline'",
+    "style-src 'unsafe-inline'",
+    "img-src https:",
+    "base-uri 'none'",
+    "form-action 'none'",
+    "frame-ancestors 'none'",
+  ].join("; "),
+};
+
+/**
  * Serve the bundled web client. Unknown paths without a file extension fall
  * back to index.html so client-side routes (/channel/..., /server/...) work.
  */
@@ -77,15 +95,11 @@ export function serveWebApp() {
     }
 
     if (url.pathname === "/__ferret/toast") {
-      return new Response(TOAST_PAGE, {
-        headers: { "content-type": "text/html; charset=utf-8" },
-      });
+      return new Response(TOAST_PAGE, { headers: POPUP_HEADERS });
     }
 
     if (url.pathname === "/__ferret/mini") {
-      return new Response(MINI_PAGE, {
-        headers: { "content-type": "text/html; charset=utf-8" },
-      });
+      return new Response(MINI_PAGE, { headers: POPUP_HEADERS });
     }
 
     if (url.pathname === "/__ferret/ringtone") {

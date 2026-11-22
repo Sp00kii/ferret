@@ -13,14 +13,15 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | `src/ferret/constants.ts` | Names, IDs, schemes and the unofficial notice |
 | `src/ferret/webApp.ts` | Serves the bundled web client from `ferret-app://app` (SPA routing, custom ringtone / sound / soundboard files) |
 | `src/ferret/settings.ts` | Ferret settings store (`ferret-settings.json`): ringtone choice (Dook Ring by default; removed presets fall back to it), custom ringtone file, Ferret style switch + theme + accent colour, app icon, last version whose "What's new" was seen, notification pop-ups switch, per-sound choices + custom sound files, voice settings (push-to-talk, noise gate, shortcuts, soundboard volume, compact call window), per-person ringtone / message sound (custom files in `people/`), your own soundboard clips (copied to `%AppData%\Ferret\soundboard`, up to 24) |
-| `src/ferret/devData.ts` | `pnpm start` uses its own `%AppData%\Ferret Dev` folder so a dev run never closes or changes the installed Ferret |
+| `src/ferret/devData.ts` | `pnpm start` uses its own `%AppData%\Ferret Dev` folder so a dev run never closes or changes the installed Ferret (imported by both settings stores, so it always runs before they open their files) |
 | `src/ferret/incomingCall.ts` | Windows notification + taskbar flash for incoming calls; click opens the call |
 | `src/ferret/resync.ts` | Tells the page to resync on wake from sleep / screen unlock |
 | `src/ferret/updater.ts` | Checks GitHub Releases on startup, offers the update, installs via update.electronjs.org |
 | `src/ferret/trust.ts` | Only the Ferret page may use Ferret's IPC; URL check for custom schemes |
+| `src/ferret/permissions.ts` | Permission requests: Ferret's own page keeps everything it uses (mic, camera, screen share, notifications...); embedded players (YouTube, Spotify...) may only go fullscreen and copy, and nothing may open other programs except web and mail links |
 | `src/ferret/hotkeys.ts` | Push-to-talk (global input hook via `uiohook-napi`, only running while push-to-talk is on; it only reacts to the one bound key/button) and global mute / deafen shortcuts |
 | `src/ferret/diagnostics.ts` | App facts for the diagnostics panel (versions, OS, uptime; no paths or account info) |
-| `src/ferret/toasts.ts`, `src/ferret/toastPage.ts` | Ferret notification pop-ups in the corner with Reply / Open (can be switched back to Windows notifications) |
+| `src/ferret/toasts.ts`, `src/ferret/toastPage.ts` | Ferret notification pop-ups in the corner with Reply / Open (can be switched back to Windows notifications); both pop-up pages (and the compact call window) get a strict Content-Security-Policy |
 | `src/ferret/appIcon.ts`, `assets/desktop/alt/*` | Alternative app icons (recoloured mascot, incl. albino and silver ferrets) for the window, taskbar button (`.ico` shipped in `resources/alt`) and tray |
 | `src/ferret/zoom.ts` | Zoom is a remembered setting (slider, Ctrl +/−/0, Ctrl + wheel in 10% steps) |
 | `src/ferret/imageCors.ts` | Adds a CORS header to Stoat's image proxy responses so still frames of GIFs can be drawn locally |
@@ -32,7 +33,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | `assets/desktop/*` | Ferret mascot icons (replaces the Stoat brand-asset submodule) |
 | `.github/workflows/ferret-release.yml` | Builds + publishes the Windows installer and Linux .deb / .tar.gz for `v*` tags (after the type check passes); can be run by hand to test builds without publishing |
 | `.github/workflows/ferret-checks.yml`, `scripts/check-types.mjs` | Type check on every push (`pnpm check`); a failing check blocks releases |
-| `site/`, `.github/workflows/ferret-site.yml` | The website (https://sp00kii.github.io/ferret/), published to GitHub Pages |
+| `site/`, `.github/workflows/ferret-site.yml` | The website (https://sp00kii.github.io/ferret/), published to GitHub Pages; fonts are self-hosted (no Google Fonts requests) |
 | `README.md`, `CHANGES.md`, `UPSTREAM.md`, `ROADMAP.md` | Docs (ROADMAP: on-hold ideas and what Stoat users ask for) |
 
 **Edited upstream files**
@@ -41,14 +42,15 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | --- | --- |
 | `src/main.ts` | Register/serve the bundled web client; Ferret updater instead of `update-electron-app`; own AppUserModelID; navigation guard compares protocol + host (`origin` is `"null"` for custom schemes); dev runs don't claim `ferret://` links; **quit fix:** re-quit on a fresh task (on Windows the second `app.quit()` was ignored, leaving the app running without a window, which also broke "Restart now" for updates) |
 | `src/native/window.ts` | Load `ferret-app://app/` instead of `https://stoat.chat/app` (`--force-server` still works); `backgroundThrottling: false` so timers keep running in the tray; `quitApp` copes with an already-closed window; audio autoplay allowed (late joiners were silent, stoatchat/for-web#1743); zoom keys go through Ferret's remembered zoom setting (10% steps) |
-| `src/native/config.ts` | Discord RPC defaults to off |
+| `src/native/config.ts` | Discord RPC defaults to off; settings from the page are only accepted from the Ferret page and only for the known on/off options |
+| `src/config.d.ts` | Adds the missing `startMinimisedToTray` setting to the type |
 | `src/native/discordRpc.ts` | Ferret branding once `FERRET.discordAppId` is set (Stoat's app until then) |
 | `src/native/deepLink.ts` | `ferret://` links instead of `stoat://` |
-| `src/native/autoLaunch.ts` | Ferret name |
+| `src/native/autoLaunch.ts` | Ferret name; start-with-Windows can only be changed from the Ferret page |
 | `src/native/badges.ts` | Ignores a closed window and bad counts |
 | `src/native/tray.ts` | Ferret name; never touches a destroyed window (was "Object has been destroyed" on Quit); uses the chosen app icon |
 | `src/preload.ts` | Loads the Ferret bridge |
-| `forge.config.ts` | Ferret name/executable/installer, icon URL, bundles `build/web`, fails early if it's missing, publisher repo; .deb maker for Linux; copies the `uiohook-napi` prebuild for the platform into the package |
+| `forge.config.ts` | Ferret name/executable/installer, icon URL, bundles `build/web`, fails early if it's missing, publisher repo; .deb maker for Linux; copies the `uiohook-napi` prebuild for the platform into the package; `GrantFileProtocolExtraPrivileges` fuse off |
 | `vite.main.config.ts` | `uiohook-napi` stays external (native module) |
 | `pnpm-workspace.yaml` | `uiohook-napi` ships prebuilt binaries, no install script needed |
 | `package.json` | Name, product name (→ separate `%AppData%\Ferret` data folder), version, repo, web build scripts; removed `update-electron-app`; added `uiohook-napi` |
@@ -74,7 +76,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `voice/MicTest.tsx` | Mic test with live level meter |
 | `voice/micChain.ts` | Extra mic stage: push-to-talk + noise gate (with level meter) and the soundboard mix-in |
 | `voice/FerretVoice.tsx` | Connects push-to-talk, global shortcuts and the compact call window to the call |
-| `voice/soundboard.ts`, `voice/SoundboardButton.tsx`, `sounds/board/*.ogg` | Soundboard in the call controls with Ferret-synthesised clips (rimshot, air horn, sad trombone, ta-da, …) plus your own uploaded sounds (first 15 s play), 2.5 s cooldown |
+| `voice/soundboard.ts`, `voice/SoundboardButton.tsx`, `sounds/board/*.ogg` | Soundboard in the call controls with Ferret-synthesised clips (rimshot, air horn, sad trombone, ta-da, …) plus your own uploaded sounds (first 15 s play), 2.5 s cooldown; the panel is drawn at page level above the button, because the call bar cuts off anything sticking out of it |
 | `voice/VoiceExtrasSettings.tsx` | Settings for the above |
 | `diagnostics/*` | Hidden diagnostics panel (tap the logo on the Ferret settings page 5 times): connection log, websocket event types, "Copy logs". Never records message content, names or ids |
 | `notifications/toasts.tsx` | Sends new-message notifications to the pop-ups; sends replies typed there as a normal reply |
