@@ -77,7 +77,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `voice/MicTest.tsx` | Mic test with live level meter |
 | `voice/micChain.ts` | Extra mic stage: push-to-talk + noise gate (with level meter) and the soundboard mix-in |
 | `voice/FerretVoice.tsx` | Connects push-to-talk, global shortcuts and the compact call window to the call |
-| `voice/soundboard.ts`, `voice/SoundboardButton.tsx`, `sounds/board/*.ogg` | Soundboard in the call controls with Ferret-synthesised clips (rimshot, air horn, sad trombone, ta-da, …) plus your own uploaded sounds (first 15 s play), 2.5 s cooldown, volume slider in the panel; the panel is drawn at page level above the button, because the call bar cuts off anything sticking out of it |
+| `voice/soundboard.ts`, `voice/SoundboardButton.tsx`, `sounds/board/*.ogg` | Soundboard in the call controls with Ferret-synthesised clips (rimshot, air horn, sad trombone, ta-da, …) plus your own uploaded sounds (played in full), 2.5 s cooldown, Stop button, live volume sliders for your clips and other people's; clips go out on their own `ferret-soundboard` audio track next to your mic (only while your mic is on; otherwise mixed into the mic as before), so everyone still hears them and Ferret users can turn them down or mute them per person; the panel is drawn at page level above the button, because the call bar cuts off anything sticking out of it |
 | `voice/VoiceExtrasSettings.tsx` | Settings for the above |
 | `diagnostics/*` | Hidden diagnostics panel (tap the logo on the Ferret settings page 5 times): connection log, websocket event types, "Copy logs". Never records message content, names or ids |
 | `notifications/toasts.tsx` | Sends new-message notifications to the pop-ups; sends replies typed there as a normal reply |
@@ -86,7 +86,8 @@ settings, so pulling upstream changes doesn't conflict.
 | `badge.tsx` | Taskbar unread badge: mentions + unread DMs/groups, muted channels excluded (stoatchat/for-desktop#213) |
 | `motion/*` | "Pause GIFs and animated emoji until hovered" (stoatchat/for-web#664); follows Windows' animation setting until changed |
 | `QuickSwitcher.tsx` | Ctrl+K quick switcher for DMs, groups, channels and servers (stoatchat/for-desktop#61) |
-| `PersonSoundPickers.tsx`, `ProfileSounds.tsx` | Per-person sound pickers, also on each person's profile |
+| `PersonSoundPickers.tsx`, `ProfileSounds.tsx` | Per-person sound pickers and "Mute their soundboard", also on each person's profile |
+| `stopSounds.ts`, `StopSoundsButton.tsx` | Tracks playing Ferret sounds: long custom alerts stop after 5 s, previews after a while, and a "Stop sound" button appears while a longer sound plays |
 | `theme/accent.ts` | Custom accent colour (any colour; readable shades worked out per theme) |
 | `people.ts`, `PeopleSounds.tsx` | Per-person ringtone and message sound, set from the Ferret settings page or a user's right-click menu |
 | `gifs/categories.ts` | Only keeps Gifbox categories with real names (hides ids like "OcIOBa") and adds real ones. (Ferret's own favourite star was removed: Stoat added one.) |
@@ -102,13 +103,14 @@ settings, so pulling upstream changes doesn't conflict.
 | File | Change |
 | --- | --- |
 | `components/client/Controller.ts` | **Presence fix:** reconnect when the network comes back (nothing ever left the `Offline` state before), resync on wake/visibility, cap the reconnect back-off at 30s (was unbounded); honest session name; resyncs are logged for diagnostics |
-| `components/rtc/state.tsx` | Voice: show LiveKit's reconnecting state, auto-rejoin after unexpected drops, follow preferred devices |
+| `components/rtc/state.tsx` | Voice: show LiveKit's reconnecting state, auto-rejoin after unexpected drops, follow preferred devices; the mic processor isn't attached to the soundboard track |
+| `components/rtc/components/RoomAudioManager.tsx` | Other people's `ferret-soundboard` tracks follow your soundboard volume / off switch / per-person mute |
 | `components/rtc/VoiceProcessor.ts` | Routes the mic through Ferret's mic stage (desktop app only) |
 | `components/ui/.../voice/callCard/VoiceCallCardActions.tsx` | Soundboard button |
 | `components/ui/.../voice/callCard/VoiceCallCardStatus.tsx` | Shows the connection quality badge |
 | `components/app/interface/settings/UserSettings.tsx` | "Ferret" settings page, Ferret version + unofficial notice, "Source Code" links to Ferret (AGPL) |
 | `components/app/interface/settings/user/Native.tsx` | Ferret name |
-| `components/client/Sounds.tsx` | Plays Ferret's sounds (or the user's per-sound / per-person choice) instead of the silent fallback sounds |
+| `components/client/Sounds.tsx` | Plays Ferret's sounds (or the user's per-sound / per-person choice) instead of the silent fallback sounds; long custom alert files stop after 5 s |
 | `components/client/NotificationsWorker.tsx` | Passes the message author to the sound player (per-person message sounds); uses Ferret's pop-up when it's switched on |
 | `components/app/menus/UserContextMenu.tsx` | "Ferret sounds…" entry (desktop app only); closes the profile it was opened from |
 | `components/modal/modals/UserProfile.tsx` | Ferret sounds card on profiles |

@@ -86,6 +86,8 @@ export type PersonSounds = {
   /** null = use the normal ringtone / message sound */
   ringtone: SoundChoice | null;
   message: SoundChoice | null;
+  /** Don't play this person's soundboard clips (missing = false) */
+  muteSoundboard?: boolean;
 };
 
 export const MAX_PEOPLE = 200;
@@ -121,6 +123,10 @@ export type VoiceSettings = {
   deafenHotkey: string | null;
   /** 0-100 */
   soundboardVolume: number;
+  /** Play other people's soundboard clips (sent by Ferret 1.0.7+) */
+  hearSoundboards: boolean;
+  /** 0-100, volume of other people's soundboard clips */
+  othersSoundboardVolume: number;
   /** Small always-on-top window with who's talking while you're elsewhere */
   compactCallWindow: boolean;
 };
@@ -134,6 +140,8 @@ const DEFAULT_VOICE: VoiceSettings = {
   muteHotkey: null,
   deafenHotkey: null,
   soundboardVolume: 60,
+  hearSoundboards: true,
+  othersSoundboardVolume: 100,
   compactCallWindow: true,
 };
 
@@ -358,6 +366,7 @@ export function applyPatch(patch: unknown): FerretSettings {
       "pushToTalk",
       "noiseGate",
       "compactCallWindow",
+      "hearSoundboards",
     ] as const) {
       if (typeof v[key] === "boolean") voice[key] = v[key];
     }
@@ -370,6 +379,11 @@ export function applyPatch(patch: unknown): FerretSettings {
       Number.isFinite(v.soundboardVolume)
     )
       voice.soundboardVolume = clamp(v.soundboardVolume, 0, 100);
+    if (
+      typeof v.othersSoundboardVolume === "number" &&
+      Number.isFinite(v.othersSoundboardVolume)
+    )
+      voice.othersSoundboardVolume = clamp(v.othersSoundboardVolume, 0, 100);
     for (const key of ["muteHotkey", "deafenHotkey"] as const) {
       const value = v[key];
       if (
@@ -420,6 +434,8 @@ export function applyPatch(patch: unknown): FerretSettings {
       const v = value as Partial<Record<string, unknown>>;
       if (typeof v.name === "string")
         person.name = v.name.replace(/\s+/g, " ").trim().slice(0, 64);
+      if (typeof v.muteSoundboard === "boolean")
+        person.muteSoundboard = v.muteSoundboard;
 
       for (const kind of PERSON_SOUND_KINDS) {
         const choice = v[kind];
