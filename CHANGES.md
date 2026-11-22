@@ -87,7 +87,7 @@ settings, so pulling upstream changes doesn't conflict.
 | `theme/IconPicker.tsx`, `public/ferret/icons/` | App icon picker |
 | `whatsNew/*` | "What's new in Ferret" pop-up, shown once after an update (and from About) |
 | `badge.tsx` | Taskbar unread badge: mentions + unread DMs/groups, muted channels excluded (stoatchat/for-desktop#213) |
-| `motion/*` | "Pause GIFs and animated emoji until hovered" (stoatchat/for-web#664); follows Windows' animation setting until changed |
+| `motion/*` | "Pause GIFs and animated emoji until hovered" (stoatchat/for-web#664) and "Reduce motion" (CSS and script animations), both following Windows' animation setting until changed; "Underline links". Gathered with zoom, message text size, a readable font (Stoat's own Atkinson Hyperlegible / OpenDyslexic / Lexend) and high contrast in Settings → Ferret → Appearance → Accessibility (stoatchat/for-web#220, #64) |
 | `QuickSwitcher.tsx` | Ctrl+K quick switcher for DMs, groups, channels and servers (stoatchat/for-desktop#61) |
 | `PersonSoundPickers.tsx`, `ProfileSounds.tsx` | Per-person private nickname, sound pickers, "Mute their soundboard" and their soundboard volume, also on each person's profile |
 | `LinkPreviews.tsx` | Discord-style cards for links without a Stoat preview (waits for Stoat's own first; `<link>`, code and spoilers are skipped) |

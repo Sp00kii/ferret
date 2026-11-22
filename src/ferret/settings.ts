@@ -44,6 +44,10 @@ export type FerretSettings = {
   notificationPopups: boolean;
   /** Ferret makes previews for links Stoat didn't preview */
   linkPreviews: boolean;
+  /** Underline links in messages */
+  underlineLinks: boolean;
+  /** Turn animations off; null = follow Windows' setting */
+  reduceMotion: boolean | null;
   /** Ferret's look (navy/copper); off = stock Stoat theming */
   ferretStyle: boolean;
   /** Per-sound choices; slots that aren't listed use Ferret's own sound */
@@ -258,6 +262,8 @@ const DEFAULTS: FerretSettings = {
   ferretStyle: true,
   notificationPopups: true,
   linkPreviews: true,
+  underlineLinks: false,
+  reduceMotion: null,
   appIcon: "classic",
   zoom: 100,
   pauseAnimations: null,
@@ -435,6 +441,12 @@ export function applyPatch(patch: unknown): FerretSettings {
 
   if (typeof input.linkPreviews === "boolean")
     next.linkPreviews = input.linkPreviews;
+
+  if (typeof input.underlineLinks === "boolean")
+    next.underlineLinks = input.underlineLinks;
+
+  if (typeof input.reduceMotion === "boolean" || input.reduceMotion === null)
+    next.reduceMotion = input.reduceMotion;
 
   if (input.voice && typeof input.voice === "object") {
     const v = input.voice as Partial<VoiceSettings>;
