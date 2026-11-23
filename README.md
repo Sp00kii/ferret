@@ -68,16 +68,6 @@ After changing web client code, `pnpm web:build:fast` rebuilds without reinstall
 The official desktop app loads `https://stoat.chat/app`. Ferret instead bundles its own build of the web client and serves it from `ferret-app://app`, while still talking to `api.stoat.chat`.
 
 - [CHANGES.md](CHANGES.md) lists everything Ferret modifies.
-- [UPSTREAM.md](UPSTREAM.md) explains how to pull in new Stoat updates.
-
-### Publishing a new version
-
-```bash
-git tag v1.0.1
-git push origin v1.0.1
-```
-
-GitHub Actions builds the installer and attaches it to a new release; installed copies pick it up on their next start.
 
 ## License
 

@@ -28,7 +28,7 @@ reduced motion (for-web#220, #64), Ferret in your Discord status, screen share s
 choices without the call echoing (for-desktop#247, #335, #261, for-web#1517),
 friend links (stoatchat#522), Tab-only emoji suggestions (for-web#628),
 spellcheck language (for-desktop#69), copying replies with "Replying to"
-(for-web#172), a time picker for `<t:…>` times (for-web#1120) round or
+(for-web#172), a time picker for `<t:…>` times (for-web#1120), round or
 square avatars (for-web#377), dragging images onto avatar / banner uploads
 (for-web#150), Windows on ARM builds (for-desktop#230), the emoji / GIF picker
 under the call window (for-web#889), the wrong emoji from autocomplete
@@ -47,12 +47,12 @@ and [Engadget](https://www.engadget.com/2193599/open-source-discord-alternatives
 | --- | --- | --- | --- |
 | Collapsible reply threads | for-web#1314 | Medium | Client-side only. |
 | Pop out a screen share or camera into its own window | for-desktop#260 | Medium | Fits next to the compact call window. |
-| Hearing your own voice when sharing your screen with audio | for-desktop#336 | Medium | Bug; would need testing with a real share. |
+| Hearing your own voice when sharing your screen with audio | for-desktop#336 | Medium | Largely covered by the new screen share sound choices; more testing welcome. |
 | Custom Stoat servers (self-hosted instances) on the login screen | for-desktop#96 (+9), for-android#12 (+41) | Medium | Safe as long as the official server stays the default. |
 | Theme editor (pick any colour) | for-web#976 | Medium | Builds on Ferret's theme system. |
 | Choose where Ferret installs, clean uninstall | for-desktop#40, #51 | Hard | Limited by the Squirrel installer; would mean switching to another installer. |
 | Flatpak / Flathub build for Linux | for-desktop#11 (+15), #77 | Medium | Forge already has a Flatpak maker; Flathub review is the slow part. |
-| macOS build | for-desktop#17, #107 | Hard | Needs a Mac to test and Apple signing (€99 a year) to avoid "app is damaged". |
+| macOS build | for-desktop#17, #107 | Hard | Needs a Mac to test, and Apple code signing so macOS does not say the app is damaged. |
 
 ### Newer requests (checked 2026-11-22)
 
@@ -85,7 +85,7 @@ and [Engadget](https://www.engadget.com/2193599/open-source-discord-alternatives
 
 ### What reviewers say overall
 
-- The biggest worry is that Stoat still feels **buggy and unfinished** (AlternativeTo, Privacy Guides). Ferret's reliability fixes (reconnects, presence, voice rejoin) speak directly to this and are worth putting first on the website.
+- The biggest worry is that Stoat still feels **buggy and unfinished** (AlternativeTo, Privacy Guides). Ferret's reliability fixes (reconnects, presence, voice rejoin) are aimed at exactly this.
 - **No end-to-end encryption** comes up most among privacy-minded users. Ferret can't fix that.
 - People like that Stoat is **free, familiar if you know Discord, and has no paywalled features**.
 - The **mobile apps** get the most criticism, but that's outside what Ferret does.

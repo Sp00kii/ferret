@@ -39,7 +39,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | `.github/workflows/ferret-release.yml` | Builds + publishes the Windows installer and Linux .deb / .tar.gz for `v*` tags (after the type check passes); can be run by hand to test builds without publishing |
 | `.github/workflows/ferret-checks.yml`, `scripts/check-types.mjs` | Type check on every push (`pnpm check`); a failing check blocks releases |
 | `site/`, `.github/workflows/ferret-site.yml` | The website (https://sp00kii.github.io/ferret/), published to GitHub Pages; fonts are self-hosted (no Google Fonts requests) |
-| `README.md`, `CHANGES.md`, `UPSTREAM.md`, `ROADMAP.md` | Docs (ROADMAP: on-hold ideas and what Stoat users ask for) |
+| `README.md`, `CHANGES.md`, `ROADMAP.md` | Docs (ROADMAP: on-hold ideas and what Stoat users ask for) |
 
 **Edited upstream files**
 
