@@ -27,7 +27,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | `src/ferret/toasts.ts`, `src/ferret/toastPage.ts` | Ferret notification pop-ups in the corner with Reply / Open (can be switched back to Windows notifications); both pop-up pages (and the compact call window) get a strict Content-Security-Policy |
 | `src/ferret/appIcon.ts`, `assets/desktop/alt/*` | Alternative app icons (recoloured mascot, incl. albino and silver ferrets) for the window, taskbar button (`.ico` shipped in `resources/alt`) and tray |
 | `src/ferret/zoom.ts` | Zoom is a remembered setting (slider, Ctrl +/−/0, Ctrl + wheel in 10% steps) |
-| `src/ferret/imageCors.ts` | Adds a CORS header to Stoat's image proxy responses so still frames of GIFs can be drawn locally |
+| `src/ferret/imageCors.ts` | Adds a CORS header to Stoat's image proxy responses so still frames of GIFs can be drawn locally; lets Ferret's own page embed Discover (stt.gg only allowed Stoat's sites, so "Find new servers" was white) |
 | `src/ferret/backup.ts` | Save / restore a `.ferret-backup` file with all Ferret settings and the user's own sound files (no paths or account data; imports are validated like any other settings change) |
 | `src/ferret/miniCall.ts`, `src/ferret/miniPage.ts` | Compact always-on-top call window shown while in a call and Ferret isn't focused (can be turned off, or closed per call) |
 | `src/ferret/index.ts` | Wires the above into the main process; loads `native/badges.ts`, which upstream never imported (so taskbar badges never worked) |
@@ -46,7 +46,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | --- | --- |
 | `src/main.ts` | Register/serve the bundled web client; Ferret updater instead of `update-electron-app`; own AppUserModelID; navigation guard compares protocol + host (`origin` is `"null"` for custom schemes); dev runs don't claim `ferret://` links; **quit fix:** re-quit on a fresh task (on Windows the second `app.quit()` was ignored, leaving the app running without a window, which also broke "Restart now" for updates); Ferret's own installer events; in-app links asking for a new window (middle-click) open inside Ferret |
 | `src/native/window.ts` | Load `ferret-app://app/` instead of `https://stoat.chat/app` (`--force-server` still works); `backgroundThrottling: false` so timers keep running in the tray; `quitApp` copes with an already-closed window; audio autoplay allowed (late joiners were silent, stoatchat/for-web#1743); zoom keys go through Ferret's remembered zoom setting (10% steps); screen share picker starts Ferret's audio helper for "only this app" / "everything except Ferret" |
-| `src/native/discordRpc.ts` | Discord status shows Ferret (its own Discord app, with a Get Ferret button) instead of Stoat |
+| `src/native/discordRpc.ts`, `src/native/config.ts` | Discord status shows Ferret (its own Discord app, with a Get Ferret button) instead of Stoat. **Bug fix:** the switch saved the setting only after trying to start, so turning it on did nothing until a restart; connection errors are logged and retried, and turning it off clears the status |
 | `src/native/config.ts` | Discord RPC defaults to off; settings from the page are only accepted from the Ferret page and only for the known on/off options |
 | `src/config.d.ts` | Adds the missing `startMinimisedToTray` setting to the type |
 | `src/native/discordRpc.ts` | Ferret branding once `FERRET.discordAppId` is set (Stoat's app until then) |

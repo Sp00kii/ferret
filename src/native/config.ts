@@ -5,11 +5,12 @@ import Store from "electron-store";
 
 // Ferret mod: dev runs use their own data folder; must run before the store
 import "../ferret/devData";
+import { isFromApp } from "../ferret/trust";
 
 import { destroyDiscordRpc, initDiscordRpc } from "./discordRpc";
 import { mainWindow } from "./window";
 
-import { isFromApp } from "../ferret/trust"; // Ferret mod
+// Ferret mod
 
 const schema = {
   firstLaunch: {
@@ -183,16 +184,18 @@ class Config {
   }
 
   set discordRpc(value: boolean) {
+    // Ferret mod: save first. initDiscordRpc checks this setting, so starting
+    // it before saving did nothing until the next restart
+    (store as never as { set(k: string, value: boolean): void }).set(
+      "discordRpc",
+      value,
+    );
+
     if (value) {
       initDiscordRpc();
     } else {
       destroyDiscordRpc();
     }
-
-    (store as never as { set(k: string, value: boolean): void }).set(
-      "discordRpc",
-      value,
-    );
 
     this.sync();
   }
