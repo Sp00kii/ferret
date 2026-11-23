@@ -20,6 +20,7 @@ comment (`<!-- Ferret mod -->` in HTML, `{/* Ferret mod */}` in JSX).
 | `src/ferret/trust.ts` | Only the Ferret page may use Ferret's IPC; URL check for custom schemes |
 | `src/ferret/linkPreview.ts` | Previews for links Stoat's server couldn't preview: fetches only public web pages (never this PC or the local network, checked at connect time and on every redirect), no cookies, 512 KB / 6 s limits, returns only title, description, picture URL and colour; can be turned off |
 | `src/ferret/shareAudio.ts`, `native/audio-capture/main.cpp`, `scripts/build-audio-helper.mjs` | Screen share sound choices: no sound, all sound, only the shared app, or everything except Ferret (no echo). The last two use Ferret's own small Windows 11 helper (process loopback; built in the release workflow, shipped as `resources/native`), which only reads sound while you share and stops when the share ends |
+| `src/ferret/updater.ts` (Windows on ARM) | ARM copies open the release page to update; the ARM installer is built by the release workflow (`windows-arm64` job) without touching the x64 update files |
 | `src/ferret/squirrel.ts` | Windows installer events (replaces electron-squirrel-startup): updates only refresh the Start menu shortcut, so a deleted desktop shortcut stays deleted |
 | `src/ferret/permissions.ts` | Permission requests: Ferret's own page keeps everything it uses (mic, camera, screen share, notifications...); embedded players (YouTube, Spotify...) may only go fullscreen and copy, and nothing may open other programs except web and mail links |
 | `src/ferret/hotkeys.ts` | Push-to-talk (global input hook via `uiohook-napi`, only running while push-to-talk is on; it only reacts to the one bound key/button) and global mute / deafen shortcuts |
@@ -96,6 +97,8 @@ settings, so pulling upstream changes doesn't conflict.
 | `TimeButton.tsx`, `composerPanel.tsx` | Clock button in the message box: pick a date and time and it adds a `<t:…>` time everyone sees in their own time zone (stoatchat/for-web#1120); shared look of the message box menus |
 | `src/ferret/spellcheck.ts` (desktop) | Spellchecker language picker (automatic = Ferret's language) (stoatchat/for-desktop#69) |
 | `personas.ts`, `PersonaButton.tsx` | Personas: post with another name, picture and (with Manage Roles) name colour using Stoat's own masquerade, picked per channel from a mask button in the message box; only where the server gives you the Masquerade permission |
+| `discoverTheme.ts` | Discover (Find new servers) in Ferret's colours instead of Stoat's |
+| `RolePreviewBanner.tsx` | "View server as role" banner with Stop |
 | `copyReplies.ts` | Copied messages keep "Replying to <name>: …" on one line (stoatchat/for-web#172) |
 | `nicknames.ts` | Private nicknames: your name for someone replaces theirs everywhere in Ferret (not masquerades or webhooks); nothing is sent to Stoat |
 | `Navigation.tsx` | Follows the desktop app's navigation requests (`ferret://` links and middle-clicked in-app links); the page never asked for them, so those links only brought the window forward. Friend links (`ferret://add-friend/<name>/<1234>`, stoatchat#522) open "Add a new friend" with the name filled in; you still press Send |
@@ -128,8 +131,13 @@ settings, so pulling upstream changes doesn't conflict.
 | `components/client/Sounds.tsx` | Plays Ferret's sounds (or the user's per-sound / per-person choice) instead of the silent fallback sounds; long custom alert files stop after 5 s |
 | `components/client/NotificationsWorker.tsx` | Passes the message author to the sound player (per-person message sounds); uses Ferret's pop-up when it's switched on |
 | `components/app/interface/settings/user/Native.tsx` | "Discord RPC" switch is called "Discord status" and says it shows Ferret |
+| `src/interface/Discover.tsx` | Sends Ferret's colours to the Discover page |
+| `components/app/interface/settings/server/roles/ServerRoleEditor.tsx` | "View server as this role" |
+| `components/ui/.../picker/CompositionMediaPicker.tsx` | Emoji / GIF picker above the floating call window (stoatchat/for-web#889) |
+| `components/ui/components/utils/files/FileDropAnywhereCollector.tsx` | No flicker when dragging files in (stoatchat/for-desktop#218) |
+| `components/ui/components/utils/files/FileInput.tsx` | Drop an image onto avatar / banner / icon uploads (stoatchat/for-web#150) |
 | `components/markdown/plugins/timestamps.tsx` | `<t:…>` times follow your 12 / 24-hour setting ("hh:mm" was a 12-hour clock without AM / PM) |
-| `components/ui/.../texteditor/codeMirrorAutoComplete.ts` | Optional: only Tab picks emoji suggestions, Enter sends as typed (stoatchat/for-web#628) |
+| `components/ui/.../texteditor/codeMirrorAutoComplete.ts` | Optional: only Tab picks emoji suggestions, Enter sends as typed (stoatchat/for-web#628); the closing `:` picks the exact emoji (`:cat:` was becoming `:cat-face:`, stoatchat/for-web#1526) |
 | `components/ui/.../messaging/elements/MessageReply.tsx` | Copying messages keeps "Replying to <name>: …" (stoatchat/for-web#172) |
 | `components/modal/modals/AddFriend.tsx`, `modal/types.ts` | Name can be filled in by a friend link |
 | `components/app/menus/UserContextMenu.tsx` | "Ferret nickname & sounds…" entry (desktop app only); closes the profile it was opened from |
@@ -157,6 +165,8 @@ Based on the exact SDK commit the official web client ships (`e88f6aa`).
 | `src/events/v1.ts` | **Presence fix:** on reconnect, refresh already-cached users from the `Ready` snapshot (previously kept stale online/status); clear voice participants before applying the snapshot (ended calls lingered); emit `voiceChannelJoin` / `voiceChannelLeave`; handle `VoiceChannelMove` |
 | `src/events/EventClient.ts` | `checkAlive()`: probe a possibly half-open socket immediately instead of waiting for the next heartbeat |
 | `src/Client.ts` | Event types for the voice events |
+| `src/permissions/calculator.ts` | `rolePreview`: work out permissions in one server as if you only had chosen roles ("View server as role"; your app only) |
+| `src/events/v1.ts` (messages) | Loads a message author the app doesn't know yet (often bots, stoatchat/for-web#814) |
 | `src/classes/Server.ts` | `refreshPresence()`: re-check who is online and update cached users in place (Stoat sometimes sends no went-offline event; member sync never updated cached users) |
 
 Nothing here changes what is sent to the Stoat API or websocket beyond what

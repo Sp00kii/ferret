@@ -81,6 +81,67 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  # Windows on ARM (stoatchat/for-desktop#230): only the installer is added to
+  # the release; ARM copies open the release page to update, so the x64
+  # update files stay exactly as they are
+  windows-arm64:
+    name: Windows on ARM installer
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout (with web + SDK submodules)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - name: Use the tag as the app version
+        if: env.IS_RELEASE == 'true'
+        shell: bash
+        run: npm pkg set version="${GITHUB_REF_NAME#v}"
+
+      - name: Install desktop dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build the Ferret web client
+        run: pnpm web:build
+
+      # a type error stops the release here, before anything is published
+      - name: Type check
+        run: node scripts/check-types.mjs
+
+      # per-app screen share sound (native/audio-capture), shipped as resources/native
+      - name: Build audio helper
+        run: node scripts/build-audio-helper.mjs --arch arm64
+
+      - name: Build installer
+        run: pnpm exec electron-forge make --platform win32 --arch arm64 --targets @electron-forge/maker-squirrel
+
+      - name: Name the ARM installer
+        shell: bash
+        run: |
+          mkdir -p dist-arm64
+          cp out/make/squirrel.windows/arm64/*Setup.exe dist-arm64/FerretSetup-arm64.exe
+          ls -la dist-arm64
+
+      - name: Keep the ARM installer
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ferret-windows-arm64
+          path: dist-arm64/*
+          if-no-files-found: error
+          retention-days: 14
+
   linux:
     name: Linux (.deb + .tar.gz)
     runs-on: ubuntu-latest
@@ -136,8 +197,9 @@ jobs:
   publish:
     name: Publish GitHub Release
     runs-on: ubuntu-latest
-    needs: [windows, linux]
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, linux, windows-arm64]
+    # a failed ARM build doesn't hold back the normal release
+    if: always() && startsWith(github.ref, 'refs/tags/v') && needs.windows.result == 'success' && needs.linux.result == 'success'
     permissions:
       contents: write
 
@@ -147,6 +209,13 @@ jobs:
         with:
           name: ferret-windows
           path: release/windows
+
+      - name: Get the Windows on ARM installer
+        if: needs.windows-arm64.result == 'success'
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: ferret-windows-arm64
+          path: release/windows-arm64
 
       - name: Get the Linux files
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0

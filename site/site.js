@@ -93,6 +93,12 @@
       const find = (test) => release.assets.find((asset) => test(asset.name));
       const windows = find((name) => /setup\.exe$/i.test(name));
       const deb = find((name) => /\.deb$/i.test(name));
+      const arm = find((name) => /arm64\.exe$/i.test(name));
+      if (arm) {
+        const link = document.getElementById("dl-arm");
+        link.href = arm.browser_download_url;
+        link.hidden = false;
+      }
       if (windows) document.getElementById("dl-windows").href = windows.browser_download_url;
       const linux = document.getElementById("dl-linux");
       if (deb) {

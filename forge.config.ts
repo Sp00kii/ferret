@@ -154,7 +154,7 @@ const config: ForgeConfig = {
       }
     },
     // Copy the node-pipewire dist to the app on linux
-    packageAfterCopy: async (_config, buildPath, _version, platform) => {
+    packageAfterCopy: async (_config, buildPath, _version, platform, arch) => {
       if (platform === "linux") {
         // Copy only the files we need to run the code, which is dist, LICENSE, and package.json
         fs.cpSync(
@@ -186,7 +186,8 @@ const config: ForgeConfig = {
         for (const file of ["dist", "LICENSE", "package.json"]) {
           copy(`uiohook-napi/${file}`);
         }
-        copy(`uiohook-napi/prebuilds/${platform}-x64`);
+        // Ferret mod: the right prebuild for the target (x64 or arm64)
+        copy(`uiohook-napi/prebuilds/${platform}-${arch}`);
         for (const file of [
           "index.js",
           "node-gyp-build.js",

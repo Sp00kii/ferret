@@ -11,8 +11,13 @@ export type UpdateCheckResult =
   | { status: "downloading"; version: string }
   | { status: "error"; message: string };
 
-/** Squirrel-installed builds can update themselves; dev runs can't */
-const canSelfUpdate = () => app.isPackaged && process.platform === "win32";
+/**
+ * Squirrel-installed builds can update themselves; dev runs can't. Windows
+ * on ARM opens the release page instead (its update files would clash with
+ * the normal x64 ones).
+ */
+const canSelfUpdate = () =>
+  app.isPackaged && process.platform === "win32" && process.arch !== "arm64";
 
 let downloading = false;
 

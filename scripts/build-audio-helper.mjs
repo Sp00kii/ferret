@@ -3,7 +3,9 @@
 // Needs Visual Studio (or its Build Tools) with the C++ workload; GitHub's
 // Windows runners have it. On other systems this does nothing.
 //
-//   node scripts/build-audio-helper.mjs
+//   node scripts/build-audio-helper.mjs              x64
+//   node scripts/build-audio-helper.mjs --arch arm64 Windows on ARM (skipped,
+//     not failed, when Visual Studio's ARM64 tools aren't installed)
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import os from "node:os";
@@ -15,6 +17,7 @@ if (process.platform !== "win32") {
   process.exit(0);
 }
 
+const arm64 = process.argv.includes("arm64");
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const source = path.join(root, "native", "audio-capture", "main.cpp");
 const outDir = path.join(root, "build", "native");
@@ -38,7 +41,9 @@ const found = spawnSync(
     "-products",
     "*",
     "-requires",
-    "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+    arm64
+      ? "Microsoft.VisualStudio.Component.VC.Tools.ARM64"
+      : "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
     "-property",
     "installationPath",
   ],
@@ -50,9 +55,14 @@ const vcvars = path.join(
   "VC",
   "Auxiliary",
   "Build",
-  "vcvars64.bat",
+  arm64 ? "vcvarsamd64_arm64.bat" : "vcvars64.bat",
 );
 if (!installation || !existsSync(vcvars)) {
+  if (arm64) {
+    // the ARM app still works, just without "only this app" share sound
+    console.log("Visual Studio's ARM64 tools not found; audio helper skipped.");
+    process.exit(0);
+  }
   console.error("Visual Studio's C++ tools (vcvars64.bat) not found.");
   process.exit(1);
 }
