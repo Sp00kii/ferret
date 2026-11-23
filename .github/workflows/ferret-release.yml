@@ -227,9 +227,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          ls -la release/windows release/linux
+          mkdir -p release/windows-arm64
+          ls -la release/windows release/linux release/windows-arm64
           gh release create "$GITHUB_REF_NAME" \
-            release/windows/* release/linux/* \
+            release/windows/* release/linux/* release/windows-arm64/* \
             --repo "$GITHUB_REPOSITORY" \
             --verify-tag \
             --title "Ferret $GITHUB_REF_NAME" \
