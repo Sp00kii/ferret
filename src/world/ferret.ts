@@ -56,6 +56,7 @@ contextBridge.exposeInMainWorld("ferret", {
   whatsNew: () => ipcRenderer.invoke("ferret:whatsNew"),
   whatsNewSeen: () => ipcRenderer.invoke("ferret:whatsNewSeen"),
   linkPreview: (url: string) => ipcRenderer.invoke("ferret:linkPreview", url),
+  spellcheckLanguages: () => ipcRenderer.invoke("ferret:spellcheckLanguages"),
 
   // screen share sound captured by Ferret's helper (Windows 11)
   shareAudio: {

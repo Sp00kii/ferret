@@ -24,7 +24,12 @@ high contrast theme (for-web#588, #64), no new desktop shortcut on every update
 (for-desktop#223), private nicknames for friends (stoatchat discussion #620),
 previews for links Stoat can't preview, personas (masquerade) for role-play
 (for-web#244), an accessibility section with readable fonts, link underlines and
-reduced motion (for-web#220, #64), and Ferret in your Discord status.
+reduced motion (for-web#220, #64), Ferret in your Discord status, screen share sound
+choices without the call echoing (for-desktop#247, #335, #261, for-web#1517),
+friend links (stoatchat#522), Tab-only emoji suggestions (for-web#628),
+spellcheck language (for-desktop#69), copying replies with "Replying to"
+(for-web#172), a time picker for `<t:…>` times (for-web#1120) and round or
+square avatars (for-web#377).
 
 ## What Stoat users ask for, to decide on
 
@@ -37,17 +42,11 @@ and [Engadget](https://www.engadget.com/2193599/open-source-discord-alternatives
 
 | Idea | Asked for in | Effort | Thoughts |
 | --- | --- | --- | --- |
-| Friend links: share a link that opens "Add friend" for you | stoatchat#522 (+4) | Small | A `ferret://` link that fills in the username and asks before sending a friend request. |
-| Tab picks the emoji suggestion (not Enter) | for-web#628 | Small | Behaviour toggle in the composer. |
 | Collapsible reply threads | for-web#1314 | Medium | Client-side only. |
 | Pop out a screen share or camera into its own window | for-desktop#260 | Medium | Fits next to the compact call window. |
 | Hearing your own voice when sharing your screen with audio | for-desktop#336 | Medium | Bug; would need testing with a real share. |
-| Spellchecker on/off and language | for-desktop#69 | Small | Electron setting. |
 | Custom Stoat servers (self-hosted instances) on the login screen | for-desktop#96 (+9), for-android#12 (+41) | Medium | Safe as long as the official server stays the default. |
-| Copy a message including "Replying to …" | for-web#172 | Small | |
 | Drag an image onto the avatar / banner upload | for-web#150 | Small | |
-| Time converter: `<t:…>` style times shown in your own time zone | for-web#1120 | Small | |
-| Round or square avatars choice | for-web#377 | Small | Theme option. |
 | Theme editor (pick any colour) | for-web#976 | Medium | Builds on Ferret's theme system. |
 | Choose where Ferret installs, clean uninstall | for-desktop#40, #51 | Hard | Limited by the Squirrel installer; would mean switching to another installer. |
 | Flatpak / Flathub build for Linux | for-desktop#11 (+15), #77 | Medium | Forge already has a Flatpak maker; Flathub review is the slow part. |
@@ -57,7 +56,6 @@ and [Engadget](https://www.engadget.com/2193599/open-source-discord-alternatives
 
 | Idea | Asked for in | Thoughts |
 | --- | --- | --- |
-| Choose what audio a screen share sends, and stop your own voice / the call echoing in it | for-desktop#247 (13 comments), #335, #261, for-web#1517 | The most discussed desktop problem right now. Fits Ferret well. |
 | Stop Windows turning the app's volume down during calls | for-web#1358 | Not Windows' communications setting (ruled out in the report); the cause is still unknown and needs someone who can reproduce it. |
 | Voice stuck on "connecting" on some networks (IPv6) | for-desktop#346 | Worth testing; may need a fallback. |
 | App freezes until restarted on Windows | for-web#1662 | Needs reports from Ferret users; the diagnostics panel helps here. |

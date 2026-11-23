@@ -46,6 +46,12 @@ export type FerretSettings = {
   linkPreviews: boolean;
   /** Underline links in messages */
   underlineLinks: boolean;
+  /** Only Tab (not Enter) picks an emoji suggestion */
+  tabPicksEmoji: boolean;
+  /** Spellchecker language, e.g. "en-GB"; null = automatic */
+  spellcheckLanguage: string | null;
+  /** Shape of avatars everywhere */
+  avatarShape: "circle" | "rounded" | "square";
   /** Turn animations off; null = follow Windows' setting */
   reduceMotion: boolean | null;
   /** Ferret's look (navy/copper); off = stock Stoat theming */
@@ -263,6 +269,9 @@ const DEFAULTS: FerretSettings = {
   notificationPopups: true,
   linkPreviews: true,
   underlineLinks: false,
+  tabPicksEmoji: false,
+  spellcheckLanguage: null,
+  avatarShape: "circle",
   reduceMotion: null,
   appIcon: "classic",
   zoom: 100,
@@ -444,6 +453,23 @@ export function applyPatch(patch: unknown): FerretSettings {
 
   if (typeof input.underlineLinks === "boolean")
     next.underlineLinks = input.underlineLinks;
+
+  if (typeof input.tabPicksEmoji === "boolean")
+    next.tabPicksEmoji = input.tabPicksEmoji;
+
+  if (
+    input.avatarShape === "circle" ||
+    input.avatarShape === "rounded" ||
+    input.avatarShape === "square"
+  )
+    next.avatarShape = input.avatarShape;
+
+  if (
+    input.spellcheckLanguage === null ||
+    (typeof input.spellcheckLanguage === "string" &&
+      /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/.test(input.spellcheckLanguage))
+  )
+    next.spellcheckLanguage = input.spellcheckLanguage;
 
   if (typeof input.reduceMotion === "boolean" || input.reduceMotion === null)
     next.reduceMotion = input.reduceMotion;

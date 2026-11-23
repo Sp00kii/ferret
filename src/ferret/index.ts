@@ -18,6 +18,7 @@ import { initPermissions } from "./permissions";
 import { initResync } from "./resync";
 import { initSettingsIpc } from "./settings";
 import { initShareAudio } from "./shareAudio";
+import { initSpellcheck } from "./spellcheck";
 import { initToasts } from "./toasts";
 import { initUpdater } from "./updater";
 import { serveWebApp } from "./webApp";
@@ -55,6 +56,7 @@ export function initFerret() {
   initToasts();
   initLinkPreviews();
   initShareAudio();
+  initSpellcheck();
   initAppIcon();
   initZoom();
   initImageCors();

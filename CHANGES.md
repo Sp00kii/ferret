@@ -88,14 +88,17 @@ settings, so pulling upstream changes doesn't conflict.
 | `theme/IconPicker.tsx`, `public/ferret/icons/` | App icon picker |
 | `whatsNew/*` | "What's new in Ferret" pop-up, shown once after an update (and from About) |
 | `badge.tsx` | Taskbar unread badge: mentions + unread DMs/groups, muted channels excluded (stoatchat/for-desktop#213) |
-| `motion/*` | "Pause GIFs and animated emoji until hovered" (stoatchat/for-web#664) and "Reduce motion" (CSS and script animations), both following Windows' animation setting until changed; "Underline links". Gathered with zoom, message text size, a readable font (Stoat's own Atkinson Hyperlegible / OpenDyslexic / Lexend) and high contrast in Settings → Ferret → Appearance → Accessibility (stoatchat/for-web#220, #64) |
+| `motion/*` | "Pause GIFs and animated emoji until hovered" (stoatchat/for-web#664) and "Reduce motion" (CSS and script animations), both following Windows' animation setting until changed; "Underline links"; avatar shape (round, rounded square, square; stoatchat/for-web#377). Gathered with zoom, message text size, a readable font (Stoat's own Atkinson Hyperlegible / OpenDyslexic / Lexend) and high contrast in Settings → Ferret → Appearance → Accessibility (stoatchat/for-web#220, #64) |
 | `QuickSwitcher.tsx` | Ctrl+K quick switcher for DMs, groups, channels and servers (stoatchat/for-desktop#61) |
 | `PersonSoundPickers.tsx`, `ProfileSounds.tsx` | Per-person private nickname, sound pickers, "Mute their soundboard" and their soundboard volume, also on each person's profile |
 | `LinkPreviews.tsx` | Discord-style cards for links without a Stoat preview (waits for Stoat's own first; `<link>`, code and spoilers are skipped) |
 | `voice/shareAudio.ts` | Plays the audio helper's sound into a track that's added to the screen share as its sound |
+| `TimeButton.tsx`, `composerPanel.tsx` | Clock button in the message box: pick a date and time and it adds a `<t:…>` time everyone sees in their own time zone (stoatchat/for-web#1120); shared look of the message box menus |
+| `src/ferret/spellcheck.ts` (desktop) | Spellchecker language picker (automatic = Ferret's language) (stoatchat/for-desktop#69) |
 | `personas.ts`, `PersonaButton.tsx` | Personas: post with another name, picture and (with Manage Roles) name colour using Stoat's own masquerade, picked per channel from a mask button in the message box; only where the server gives you the Masquerade permission |
+| `copyReplies.ts` | Copied messages keep "Replying to <name>: …" on one line (stoatchat/for-web#172) |
 | `nicknames.ts` | Private nicknames: your name for someone replaces theirs everywhere in Ferret (not masquerades or webhooks); nothing is sent to Stoat |
-| `Navigation.tsx` | Follows the desktop app's navigation requests (`ferret://` links and middle-clicked in-app links); the page never asked for them, so those links only brought the window forward |
+| `Navigation.tsx` | Follows the desktop app's navigation requests (`ferret://` links and middle-clicked in-app links); the page never asked for them, so those links only brought the window forward. Friend links (`ferret://add-friend/<name>/<1234>`, stoatchat#522) open "Add a new friend" with the name filled in; you still press Send |
 | `stopSounds.ts`, `StopSoundsButton.tsx` | Tracks playing Ferret sounds: long custom alerts stop after 5 s, previews after a while, and a "Stop sound" button appears while a longer sound plays |
 | `theme/accent.ts` | Custom accent colour (any colour; readable shades worked out per theme) |
 | `people.ts`, `PeopleSounds.tsx` | Per-person ringtone and message sound, set from the Ferret settings page or a user's right-click menu |
@@ -125,6 +128,10 @@ settings, so pulling upstream changes doesn't conflict.
 | `components/client/Sounds.tsx` | Plays Ferret's sounds (or the user's per-sound / per-person choice) instead of the silent fallback sounds; long custom alert files stop after 5 s |
 | `components/client/NotificationsWorker.tsx` | Passes the message author to the sound player (per-person message sounds); uses Ferret's pop-up when it's switched on |
 | `components/app/interface/settings/user/Native.tsx` | "Discord RPC" switch is called "Discord status" and says it shows Ferret |
+| `components/markdown/plugins/timestamps.tsx` | `<t:…>` times follow your 12 / 24-hour setting ("hh:mm" was a 12-hour clock without AM / PM) |
+| `components/ui/.../texteditor/codeMirrorAutoComplete.ts` | Optional: only Tab picks emoji suggestions, Enter sends as typed (stoatchat/for-web#628) |
+| `components/ui/.../messaging/elements/MessageReply.tsx` | Copying messages keeps "Replying to <name>: …" (stoatchat/for-web#172) |
+| `components/modal/modals/AddFriend.tsx`, `modal/types.ts` | Name can be filled in by a friend link |
 | `components/app/menus/UserContextMenu.tsx` | "Ferret nickname & sounds…" entry (desktop app only); closes the profile it was opened from |
 | `components/app/interface/channels/text/Message.tsx` | Your private nickname for the author; Ferret's link previews under the message |
 | `components/modal/modals/UserProfile.tsx` | Ferret sounds card on profiles |
